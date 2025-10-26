@@ -5,6 +5,7 @@ import { asyncHandler } from '../utils/errorHandler';
 
 const router = Router();
 
+// Pool operations
 router.get('/', asyncHandler(PoolsController.getAllPools));
 router.get('/:id', asyncHandler(PoolsController.getPoolById));
 router.post(

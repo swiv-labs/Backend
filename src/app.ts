@@ -10,6 +10,7 @@ import poolsRoutes from './routes/pools.routes';
 import predictionsRoutes from './routes/predictions.routes';
 import leaderboardRoutes from './routes/leaderboard.routes';
 import statsRoutes from './routes/stats.routes';
+import protocolRoutes from './routes/protocol.routes';
 
 const app: Application = express();
 
@@ -28,6 +29,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // API Routes
+app.use('/api/protocol', protocolRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/pools', poolsRoutes);
 app.use('/api/predictions', predictionsRoutes);
