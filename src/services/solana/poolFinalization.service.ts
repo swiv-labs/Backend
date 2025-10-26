@@ -18,15 +18,25 @@ export class PoolFinalizationService {
 
       // 1. Fetch final price from oracle
       const finalPrice = await OracleService.getCurrentPrice(pool.asset_symbol);
-      console.log(`Final price for ${pool.asset_symbol}: $${finalPrice}`);
+      console.log(`Final price for ${pool.asset_symbol}: ${finalPrice}`);
+
+      // Convert price to u64 format (multiply by 100 for 2 decimal precision)
+      const actualPriceU64 = Math.floor(finalPrice * 100);
 
       // 2. Call Solana contract to finalize
-      await cyphercastClient.finalizePool({
-        poolId: pool.id,
-        finalPrice,
-      });
+      try {
+        const numericPoolId = parseInt(poolId);
+        const signature = await cyphercastClient.finalizePool({
+          poolId: numericPoolId,
+          actualPrice: actualPriceU64,
+        });
+        console.log(`Pool ${poolId} finalized on-chain:`, signature);
+      } catch (blockchainError: any) {
+        console.error('Blockchain finalization failed:', blockchainError.message);
+        // Continue with database update even if blockchain fails
+      }
 
-      // 3. Update pool status
+      // 3. Update pool status in database
       await PoolModel.close(poolId, finalPrice);
 
       // 4. Calculate winners and update predictions
