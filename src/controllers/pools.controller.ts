@@ -41,6 +41,7 @@ export class PoolsController {
       // Optionally fetch on-chain data
       try {
         const onChainPool = await cyphercastClient.getPool(parseInt(pool.id));
+        console.log('On-chain pool data:', onChainPool);
         if (onChainPool) {
           pool.total_participants = onChainPool.totalParticipants;
           pool.total_pool_amount = onChainPool.totalPoolAmount.toNumber();
@@ -104,6 +105,12 @@ export class PoolsController {
         target_price: targetPrice,
         end_time: endTime,
         creator,
+        blockchain_signature: blockchainResult.signature,
+        pool_pubkey: blockchainResult.poolPubkey,
+        vault_pubkey: blockchainResult.vaultPubkey,
+        entry_fee: entryFee,
+        max_participants: maxParticipants,
+        poolid: poolId,
       });
 
       // Store blockchain references

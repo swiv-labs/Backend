@@ -12,6 +12,7 @@ interface EnvConfig {
   SOLANA_NETWORK: string;
   PROGRAM_ID: string;
   AUTHORITY_KEYPAIR_PATH: string;
+  TOKEN_MINT: string;
   BINANCE_API_KEY: string;
   BINANCE_API_URL: string;
   COINGECKO_API_URL: string;
@@ -35,6 +36,7 @@ export const env: EnvConfig = {
   SOLANA_NETWORK: getEnv('SOLANA_NETWORK', 'devnet'),
   PROGRAM_ID: getEnv('PROGRAM_ID'),
   AUTHORITY_KEYPAIR_PATH: getEnv('AUTHORITY_KEYPAIR_PATH'),
+  TOKEN_MINT: getEnv('TOKEN_MINT', 'So11111111111111111111111111111111111111112'),
   BINANCE_API_KEY: getEnv('BINANCE_API_KEY', ''),
   BINANCE_API_URL: getEnv('BINANCE_API_URL', 'https://api.binance.com/api/v3'),
   COINGECKO_API_URL: getEnv('COINGECKO_API_URL', 'https://api.coingecko.com/api/v3'),

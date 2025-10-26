@@ -17,6 +17,12 @@ export class PoolModel {
     target_price: number;
     end_time: string;
     creator: string;
+    blockchain_signature: string;
+    pool_pubkey: string;
+    vault_pubkey: string;
+    entry_fee: number;
+    max_participants: number;
+    poolid: number;
   }): Promise<Pool> {
     const { data, error } = await supabase
       .from('pools')
