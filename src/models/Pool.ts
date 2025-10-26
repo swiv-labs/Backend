@@ -8,6 +8,14 @@ export interface Pool {
   end_time: string;
   status: 'active' | 'closed';
   creator: string;
+  blockchain_signature: string;
+  pool_pubkey: string;
+  vault_pubkey: string;
+  entry_fee: number;
+  max_participants: number;
+  poolid: number;
+  total_participants: number;
+  total_pool_amount: number;
   created_at: string;
 }
 

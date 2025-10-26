@@ -38,13 +38,12 @@ export class PoolsController {
         throw new AppError('Pool not found', 404);
       }
 
-      // Optionally fetch on-chain data
       try {
-        const onChainPool = await cyphercastClient.getPool(parseInt(pool.id));
-        console.log('On-chain pool data:', onChainPool);
+        const onChainPool = await cyphercastClient.getPool(parseInt(pool.poolid.toString()));
+        // console.log('On-chain pool data:', onChainPool);
         if (onChainPool) {
           pool.total_participants = onChainPool.totalParticipants;
-          pool.total_pool_amount = onChainPool.totalPoolAmount.toNumber();
+          pool.total_pool_amount = onChainPool.totalPoolAmount;
         }
       } catch (error) {
         console.log('Could not fetch on-chain pool data:', error);
