@@ -36,13 +36,15 @@ export class ProtocolController {
   static async getProtocolState(req: Request, res: Response, next: NextFunction) {
     try {
       const state = await cyphercastClient.getProtocolState();
+
+      console.log('Protocol state:', state);
       
       if (!state) {
         throw new AppError('Protocol not initialized', 404);
       }
 
       return successResponse(res, 'Protocol state retrieved', {
-        admin: state.admin.toBase58(),
+        admin: state.admin,
         protocolFeeBps: state.protocolFeeBps,
         totalPoolsCreated: state.totalPoolsCreated.toString(),
       });
