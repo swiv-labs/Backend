@@ -7,6 +7,9 @@ import * as nacl from 'tweetnacl';
 // Actual SwivPrivacy IDL from Arcium build
 import type { SwivPrivacy } from './idl/swiv_privacy';
 import IDL from './idl/swiv_privacy.json';
+import { getArciumAccountBaseSeed, getArciumProgAddress, getCompDefAccOffset, getMXEAccAddress } from '@arcium-hq/client';
+
+const ARCIUM_PROGRAM_ID = new PublicKey('BKck65TgoKRokMjQM3datB9oRwJ8rAj2jxPXvHXUvcL6');
 
 export class CypherCastClient {
   private program: Program<SwivPrivacy>;
@@ -19,9 +22,15 @@ export class CypherCastClient {
     this.authority = loadKeypair();
   }
 
-  /**
-   * Derive protocol state PDA
-   */
+  private deriveMxePDA(): PublicKey {
+    const [mxePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('mxe_pda')],
+      ARCIUM_PROGRAM_ID
+    );
+    console.log('Derived MXE PDA:', mxePda.toBase58());
+    return mxePda;
+  }
+
   private getProtocolStatePDA(): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
       [Buffer.from('protocol_state')],
@@ -238,14 +247,27 @@ export class CypherCastClient {
    */
   async initProcessBetCompDef(): Promise<string> {
     try {
+      const baseSeedCompDefAcc = getArciumAccountBaseSeed(
+        "ComputationDefinitionAccount"
+      );
+      const offset = getCompDefAccOffset("process_bet");
+
+      const compDefPDA = PublicKey.findProgramAddressSync(
+        [baseSeedCompDefAcc, this.program.programId.toBuffer(), offset],
+        getArciumProgAddress()
+      )[0];
+      console.log("getMXEAccAddress:", getMXEAccAddress(this.program.programId));
+
+      console.log(
+        "Init process bet computation definition pda is ",
+        compDefPDA.toBase58()
+      );
       const tx = await this.program.methods
         .initProcessBetCompDef()
         .accounts({
           payer: this.authority.publicKey,
-          mxeAccount: new PublicKey('BbBKMceJ5rfjdegkzbbRv6J9ujhPuAH2upidajtxjuKR'), // Replace with actual MXE account
-          compDefAccount: this.getCompDefPDA(0)[0], // offset 0 for process_bet
-          arciumProgram: new PublicKey('BKck65TgoKRokMjQM3datB9oRwJ8rAj2jxPXvHXUvcL6'),
-          systemProgram: SystemProgram.programId,
+          mxeAccount: getMXEAccAddress(this.program.programId),
+          compDefAccount: compDefPDA,
         })
         .signers([this.authority])
         .rpc();
@@ -263,14 +285,27 @@ export class CypherCastClient {
    */
   async initCalculateRewardCompDef(): Promise<string> {
     try {
+      const baseSeedCompDefAcc = getArciumAccountBaseSeed(
+        "ComputationDefinitionAccount"
+      );
+      const offset = getCompDefAccOffset("calculate_reward");
+
+      const compDefPDA = PublicKey.findProgramAddressSync(
+        [baseSeedCompDefAcc, this.program.programId.toBuffer(), offset],
+        getArciumProgAddress()
+      )[0];
+      console.log("getMXEAccAddress:", getMXEAccAddress(this.program.programId));
+
+      console.log(
+        "Init calculate reward computation definition pda is ",
+        compDefPDA.toBase58()
+      );
       const tx = await this.program.methods
         .initCalculateRewardCompDef()
         .accounts({
           payer: this.authority.publicKey,
-          mxeAccount: new PublicKey('BbBKMceJ5rfjdegkzbbRv6J9ujhPuAH2upidajtxjuKR'), 
-          compDefAccount: this.getCompDefPDA(1)[0], 
-          arciumProgram: new PublicKey('BKck65TgoKRokMjQM3datB9oRwJ8rAj2jxPXvHXUvcL6'),
-          systemProgram: SystemProgram.programId,
+          mxeAccount: getMXEAccAddress(this.program.programId),
+          compDefAccount: compDefPDA,
         })
         .signers([this.authority])
         .rpc();
@@ -287,8 +322,9 @@ export class CypherCastClient {
    * Derive computation definition PDA
    */
   private getCompDefPDA(offset: number): [PublicKey, number] {
+    console.log('Deriving comp def PDA with offset:', new BN(offset).toArrayLike(Buffer, 'le', 4));
     return PublicKey.findProgramAddressSync(
-      [Buffer.from('comp_def_account'), new BN(offset).toArrayLike(Buffer, 'le', 4)],
+      [Buffer.from('comp_def'), new BN(offset).toArrayLike(Buffer, 'le', 4)],
       this.program.programId
     );
   }

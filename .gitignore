@@ -26,4 +26,5 @@ npm-debug.log*
 Thumbs.debug
 
 # Keypair
-cyphercast-keypair.json
+keypair.json
+keypair2.json
