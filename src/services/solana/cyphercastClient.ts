@@ -20,7 +20,9 @@ export class CypherCastClient {
     this.authority = loadKeypair();
   }
 
+
   private getProtocolStatePDA(): [PublicKey, number] {
+    console.log("programId: ", this.program.programId.toBase58());
     return PublicKey.findProgramAddressSync(
       [Buffer.from('protocol_state')],
       this.program.programId
@@ -78,6 +80,56 @@ export class CypherCastClient {
       return tx;
     } catch (error: any) {
       console.error('Failed to initialize protocol:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Transfer protocol admin
+   */
+  async transferProtocolAdmin(newAdmin: PublicKey): Promise<string> {
+    try {
+      const [protocolState] = this.getProtocolStatePDA();
+
+      const tx = await this.program.methods
+        .transferAdmin(new PublicKey(newAdmin))
+        .accounts({
+          protocolState,
+          admin: this.authority.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([this.authority])
+        .rpc();
+
+      console.log('Protocol admin transferred:', tx);
+      return tx;
+    } catch (error: any) {
+      console.error('Failed to transfer protocol admin:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update protocol fee BPS
+   */
+  async updateProtocolFeeBps(newFeeBps: number = 250): Promise<string> {
+    try {
+      const [protocolState] = this.getProtocolStatePDA();
+
+      const tx = await this.program.methods
+        .updateProtocolFee(newFeeBps)
+        .accounts({
+          protocolState,
+          admin: this.authority.publicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([this.authority])
+        .rpc();
+
+      console.log('Protocol fee updated:', tx);
+      return tx;
+    } catch (error: any) {
+      console.error('Failed to update protocol fee BPS:', error);
       throw error;
     }
   }
@@ -240,6 +292,8 @@ export class CypherCastClient {
         "ComputationDefinitionAccount"
       );
       const offset = getCompDefAccOffset("process_bet");
+
+      console.log("Arcium program ID:", getArciumProgAddress().toBase58());
 
       const compDefPDA = PublicKey.findProgramAddressSync(
         [baseSeedCompDefAcc, this.program.programId.toBuffer(), offset],

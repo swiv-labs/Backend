@@ -54,6 +54,51 @@ export class ProtocolController {
   }
 
   /**
+   * Transfer protocol admin
+   */
+  static async transferProtocolAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { newAdmin } = req.body;
+      console.log('Transferring protocol admin to:', newAdmin);
+
+      const signature = await cyphercastClient.transferProtocolAdmin(
+        newAdmin
+      );
+
+      return successResponse(
+        res,
+        'Protocol admin transferred successfully',
+        { signature, newAdmin },
+        201
+      );
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  /**
+   * Update protocol fee basis points
+   */
+  static async updateProtocolFeeBps(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { newFeeBps } = req.body;
+
+      const signature = await cyphercastClient.updateProtocolFeeBps(
+        newFeeBps
+      );
+
+      return successResponse(
+        res,
+        'Protocol fee basis points updated successfully',
+        { signature, newFeeBps },
+        201
+      );
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  /**
    * Initialize Arcium computation definitions (one-time setup)
    */
   static async initializeArciumCompDefs(req: Request, res: Response, next: NextFunction) {

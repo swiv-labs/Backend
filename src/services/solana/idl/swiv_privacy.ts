@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/swiv_privacy.json`.
  */
 export type SwivPrivacy = {
-  "address": "729ib6LPCHmj13pZA2F1airFN23pG3diK4bWUTaxw3Fz",
+  "address": "CiTmx6T8cojaeTGvrTVSmiKMSLYNmQs7Pze3vShFVvUy",
   "metadata": {
     "name": "swivPrivacy",
     "version": "0.1.0",
@@ -961,6 +961,116 @@ export type SwivPrivacy = {
           }
         }
       ]
+    },
+    {
+      "name": "transferAdmin",
+      "docs": [
+        "Transfer admin authority to a new address"
+      ],
+      "discriminator": [
+        42,
+        242,
+        66,
+        106,
+        228,
+        10,
+        111,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "protocolState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAdmin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "updateProtocolFee",
+      "docs": [
+        "Update the protocol fee basis points"
+      ],
+      "discriminator": [
+        170,
+        136,
+        6,
+        60,
+        43,
+        130,
+        81,
+        96
+      ],
+      "accounts": [
+        {
+          "name": "protocolState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newFeeBps",
+          "type": "u16"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1084,6 +1194,19 @@ export type SwivPrivacy = {
   ],
   "events": [
     {
+      "name": "adminTransferredEvent",
+      "discriminator": [
+        158,
+        233,
+        64,
+        41,
+        184,
+        122,
+        98,
+        76
+      ]
+    },
+    {
       "name": "betProcessedEvent",
       "discriminator": [
         201,
@@ -1136,6 +1259,19 @@ export type SwivPrivacy = {
       ]
     },
     {
+      "name": "protocolFeeUpdatedEvent",
+      "discriminator": [
+        248,
+        27,
+        112,
+        250,
+        51,
+        251,
+        106,
+        195
+      ]
+    },
+    {
       "name": "rewardClaimedEvent",
       "discriminator": [
         246,
@@ -1182,6 +1318,22 @@ export type SwivPrivacy = {
                 "name": "epoch"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "adminTransferredEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "oldAdmin",
+            "type": "pubkey"
+          },
+          {
+            "name": "newAdmin",
+            "type": "pubkey"
           }
         ]
       }
@@ -1975,6 +2127,22 @@ export type SwivPrivacy = {
                 ]
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "protocolFeeUpdatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "oldFeeBps",
+            "type": "u16"
+          },
+          {
+            "name": "newFeeBps",
+            "type": "u16"
           }
         ]
       }

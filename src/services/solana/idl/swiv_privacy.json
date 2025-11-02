@@ -1,5 +1,5 @@
 {
-  "address": "729ib6LPCHmj13pZA2F1airFN23pG3diK4bWUTaxw3Fz",
+  "address": "CiTmx6T8cojaeTGvrTVSmiKMSLYNmQs7Pze3vShFVvUy",
   "metadata": {
     "name": "swiv_privacy",
     "version": "0.1.0",
@@ -955,6 +955,116 @@
           }
         }
       ]
+    },
+    {
+      "name": "transfer_admin",
+      "docs": [
+        "Transfer admin authority to a new address"
+      ],
+      "discriminator": [
+        42,
+        242,
+        66,
+        106,
+        228,
+        10,
+        111,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "protocol_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "update_protocol_fee",
+      "docs": [
+        "Update the protocol fee basis points"
+      ],
+      "discriminator": [
+        170,
+        136,
+        6,
+        60,
+        43,
+        130,
+        81,
+        96
+      ],
+      "accounts": [
+        {
+          "name": "protocol_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_fee_bps",
+          "type": "u16"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1078,6 +1188,19 @@
   ],
   "events": [
     {
+      "name": "AdminTransferredEvent",
+      "discriminator": [
+        158,
+        233,
+        64,
+        41,
+        184,
+        122,
+        98,
+        76
+      ]
+    },
+    {
       "name": "BetProcessedEvent",
       "discriminator": [
         201,
@@ -1130,6 +1253,19 @@
       ]
     },
     {
+      "name": "ProtocolFeeUpdatedEvent",
+      "discriminator": [
+        248,
+        27,
+        112,
+        250,
+        51,
+        251,
+        106,
+        195
+      ]
+    },
+    {
       "name": "RewardClaimedEvent",
       "discriminator": [
         246,
@@ -1176,6 +1312,22 @@
                 "name": "Epoch"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminTransferredEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "old_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_admin",
+            "type": "pubkey"
           }
         ]
       }
@@ -1969,6 +2121,22 @@
                 ]
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolFeeUpdatedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "old_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "new_fee_bps",
+            "type": "u16"
           }
         ]
       }
