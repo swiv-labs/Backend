@@ -98,12 +98,6 @@ export class PredictionsController {
         throw new AppError('Pool not found', 404);
       }
 
-      const signature = await cyphercastClient.claimRewards({
-        poolId: pool.poolid,
-        userWallet: userWallet,
-      });
-
-      console.log(`Reward claimed on-chain for prediction ${id}:`, signature);
       // Update prediction status
       const updatedPrediction = await PredictionModel.update(id, {
         status: 'claimed',
