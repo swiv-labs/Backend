@@ -380,7 +380,7 @@ export class CypherCastClient {
       const baseSeedCompDefAcc = getArciumAccountBaseSeed(
         "ComputationDefinitionAccount"
       );
-      const offset = getCompDefAccOffset("calculate_reward");
+      const offset = getCompDefAccOffset("calculate_reward_v2");
 
       const compDefPDA = PublicKey.findProgramAddressSync(
         [baseSeedCompDefAcc, this.program.programId.toBuffer(), offset],
