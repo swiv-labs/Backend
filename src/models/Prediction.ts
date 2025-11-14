@@ -6,7 +6,7 @@ export interface Prediction {
   user_wallet: string;
   amount: number;
   reward?: number;
-  status: 'pending' | 'won' | 'lost' | 'claimed';
+  status: 'pending' | 'resolved' | 'claimed';
   created_at: string;
 }
 
@@ -123,14 +123,14 @@ export class PredictionModel {
       // Calculate accuracy (only for finalized predictions)
       // Note: Actual accuracy is calculated on-chain based on encrypted predictions
       // This is a simplified version based on win/loss
-      if (prediction.status === 'won' || prediction.status === 'lost' || prediction.status === 'claimed') {
-        accuracyCount++;
-        if (prediction.status === 'won' || prediction.status === 'claimed') {
-          // For simplicity, winners get 100% accuracy in this calculation
-          // Real accuracy is calculated on-chain
-          totalAccuracy += 100;
-        }
-      }
+      // if (prediction.status === 'won' || prediction.status === 'lost' || prediction.status === 'claimed') {
+      //   accuracyCount++;
+      //   if (prediction.status === 'won' || prediction.status === 'claimed') {
+      //     // For simplicity, winners get 100% accuracy in this calculation
+      //     // Real accuracy is calculated on-chain
+      //     totalAccuracy += 100;
+      //   }
+      // }
     });
 
     // Average accuracy

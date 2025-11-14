@@ -65,8 +65,8 @@ export class PoolFinalizationService {
         targetPrice
       );
 
-      const reward = isWinner ? prediction.amount * 1.8 : 0; // 80% profit for winners
-      const status = isWinner ? 'won' : 'lost';
+      const reward = 0;
+      const status = isWinner ? 'resolved' : 'resolved';
 
       await PredictionModel.update(prediction.id, { reward, status });
       await LeaderboardModel.incrementStats(prediction.user_wallet, isWinner, reward);
