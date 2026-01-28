@@ -1,40 +1,63 @@
 import { supabase } from '../config/supabaseClient';
 
+export type PoolStatus = 'active' | 'resolved' | 'settled' | 'closed';
+
 export interface Pool {
   id: string;
-  asset_symbol: string;
-  target_price: number;
-  final_price?: number;
-  end_time: string;
-  status: 'active' | 'closed';
-  creator: string;
-  blockchain_signature: string;
+  pool_id: number;
+  admin: string;
+  name: string;
+  token_mint: string;
+  start_time: number;
+  end_time: number;
+  vault_balance: number;
+  max_accuracy_buffer: number;
+  conviction_bonus_bps: number;
+  metadata?: string;
+  resolution_target: number;
+  is_resolved: boolean;
+  resolution_ts: number;
+  total_weight: string;
+  weight_finalized: boolean;
+  total_participants: number;
   pool_pubkey: string;
   vault_pubkey: string;
-  entry_fee: number;
-  max_participants: number;
-  poolid: number;
-  total_participants: number;
-  total_pool_amount: number;
+  status: PoolStatus;
   created_at: string;
+  last_synced_at: string;
 }
 
 export class PoolModel {
+  /**
+   * Create a new pool
+   */
   static async create(poolData: {
-    asset_symbol: string;
-    target_price: number;
-    end_time: string;
-    creator: string;
-    blockchain_signature: string;
+    pool_id: number;
+    admin: string;
+    name: string;
+    token_mint: string;
+    start_time: number;
+    end_time: number;
+    vault_balance: number;
+    max_accuracy_buffer: number;
+    conviction_bonus_bps: number;
+    metadata?: string;
     pool_pubkey: string;
     vault_pubkey: string;
-    entry_fee: number;
-    max_participants: number;
-    poolid: number;
   }): Promise<Pool> {
     const { data, error } = await supabase
       .from('pools')
-      .insert([{ ...poolData, status: 'active' }])
+      .insert([{
+        ...poolData,
+        vault_balance: 0,
+        resolution_target: 0,
+        is_resolved: false,
+        resolution_ts: 0,
+        total_weight: '0',
+        weight_finalized: false,
+        total_participants: 0,
+        status: 'active',
+      }])
       .select()
       .single();
 
@@ -42,6 +65,9 @@ export class PoolModel {
     return data;
   }
 
+  /**
+   * Find pool by ID
+   */
   static async findById(id: string): Promise<Pool | null> {
     const { data, error } = await supabase
       .from('pools')
@@ -50,47 +76,60 @@ export class PoolModel {
       .single();
 
     if (error && error.code !== 'PGRST116') throw error;
-    return data;
+    return data || null;
   }
 
-  static async findByPoolId(id: string): Promise<Pool | null> {
+  /**
+   * Find pool by pool_id
+   */
+  static async findByPoolId(poolId: number): Promise<Pool | null> {
     const { data, error } = await supabase
       .from('pools')
       .select('*')
-      .eq('poolid', id)
+      .eq('pool_id', poolId)
       .single();
 
     if (error && error.code !== 'PGRST116') throw error;
-    return data;
+    return data || null;
   }
 
-  static async findAll(status?: string): Promise<Pool[]> {
-    let query = supabase.from('pools').select('*').order('created_at', { ascending: false });
-
+  /**
+   * Get all pools with optional status filter
+   */
+  static async findAll(status?: PoolStatus): Promise<Pool[]> {
+    let query = supabase.from('pools').select('*');
+    
     if (status) {
       query = query.eq('status', status);
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.order('created_at', { ascending: false });
+
     if (error) throw error;
     return data || [];
   }
 
-  static async findExpiredPools(): Promise<Pool[]> {
+  /**
+   * Get active pools
+   */
+  static async findActive(): Promise<Pool[]> {
     const { data, error } = await supabase
       .from('pools')
       .select('*')
-      .eq('status', 'active')
-      .lt('end_time', new Date().toISOString());
+      .in('status', ['active', 'resolved'])
+      .order('end_time', { ascending: true });
 
     if (error) throw error;
     return data || [];
   }
 
-  static async update(id: string, updates: Partial<Pool>): Promise<Pool> {
+  /**
+   * Update pool status
+   */
+  static async updateStatus(id: string, status: PoolStatus): Promise<Pool> {
     const { data, error } = await supabase
       .from('pools')
-      .update(updates)
+      .update({ status, last_synced_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
@@ -99,7 +138,51 @@ export class PoolModel {
     return data;
   }
 
-  static async close(id: string, finalPrice: number): Promise<Pool> {
-    return this.update(id, { status: 'closed', final_price: finalPrice });
+  /**
+   * Sync pool state from on-chain
+   */
+  static async syncFromChain(id: string, chainData: any): Promise<Pool> {
+    const { data, error } = await supabase
+      .from('pools')
+      .update({
+        vault_balance: chainData.vaultBalance.toNumber(),
+        is_resolved: chainData.isResolved,
+        resolution_ts: chainData.resolutionTs.toNumber(),
+        total_weight: chainData.totalWeight.toString(),
+        weight_finalized: chainData.weightFinalized,
+        total_participants: chainData.totalParticipants.toNumber(),
+        last_synced_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Update resolution details
+   */
+  static async updateResolution(
+    id: string, 
+    target: number,
+    status: PoolStatus
+  ): Promise<Pool> {
+    const { data, error } = await supabase
+      .from('pools')
+      .update({
+        resolution_target: target,
+        is_resolved: true,
+        status,
+        resolution_ts: Math.floor(Date.now() / 1000),
+        last_synced_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 }

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { cyphercastClient } from '../services/solana/contract.service';
+import { contractService as ContractService} from '../services/solana/contract.service';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
 
@@ -10,10 +10,11 @@ export class ProtocolController {
    */
   static async initializeProtocol(req: Request, res: Response, next: NextFunction) {
     try {
-      const { protocolFeeBps } = req.body;
+      const { protocolFeeBps, treasuryWallet } = req.body;
 
-      const signature = await cyphercastClient.initializeProtocol(
-        protocolFeeBps || 250
+      const signature = await ContractService.initializeProtocol(
+        protocolFeeBps || 250,
+        treasuryWallet
       );
 
       return successResponse(
@@ -35,7 +36,7 @@ export class ProtocolController {
    */
   static async getProtocolState(req: Request, res: Response, next: NextFunction) {
     try {
-      const state = await cyphercastClient.getProtocolState();
+      const state = await ContractService.getProtocol();
 
       console.log('Protocol state:', state);
       
@@ -61,7 +62,7 @@ export class ProtocolController {
       const { newAdmin } = req.body;
       console.log('Transferring protocol admin to:', newAdmin);
 
-      const signature = await cyphercastClient.transferProtocolAdmin(
+      const signature = await ContractService.transferProtocolAdmin(
         newAdmin
       );
 
@@ -83,7 +84,7 @@ export class ProtocolController {
     try {
       const { newFeeBps } = req.body;
 
-      const signature = await cyphercastClient.updateProtocolFeeBps(
+      const signature = await ContractService.updateProtocolFeeBps(
         newFeeBps
       );
 
@@ -111,7 +112,7 @@ export class ProtocolController {
 
       // Initialize process_bet comp def
       try {
-        const processBetTx = await cyphercastClient.initProcessBetCompDef();
+        const processBetTx = await ContractService.initProcessBetCompDef();
         results.processBet = processBetTx;
       } catch (error: any) {
         console.error('Process bet comp def initialization failed:', error.message);
@@ -120,7 +121,7 @@ export class ProtocolController {
 
       // Initialize calculate_reward comp def
       try {
-        const calculateRewardTx = await cyphercastClient.initCalculateRewardCompDef();
+        const calculateRewardTx = await ContractService.initCalculateRewardCompDef();
         results.calculateReward = calculateRewardTx;
       } catch (error: any) {
         console.error('Calculate reward comp def initialization failed:', error.message);
@@ -152,7 +153,7 @@ export class ProtocolController {
    */
   static async initProcessBetCompDef(req: Request, res: Response, next: NextFunction) {
     try {
-      const signature = await cyphercastClient.initProcessBetCompDef();
+      const signature = await ContractService.initProcessBetCompDef();
 
       return successResponse(
         res,
@@ -173,7 +174,7 @@ export class ProtocolController {
    */
   static async initCalculateRewardCompDef(req: Request, res: Response, next: NextFunction) {
     try {
-      const signature = await cyphercastClient.initCalculateRewardCompDef();
+      const signature = await ContractService.initCalculateRewardCompDef();
 
       return successResponse(
         res,

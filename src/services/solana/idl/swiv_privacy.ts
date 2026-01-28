@@ -5,58 +5,35 @@
  * IDL can be found at `target/idl/swiv_privacy.json`.
  */
 export type SwivPrivacy = {
-  "address": "8D6DiY4fWkyJ2QicNacEJFoA4cNaCfbs9r215oGLxW73",
+  "address": "8aAVXhM9uNdoijr7YJf3KG8yikHYdAUQZ6kmts9BBVLh",
   "metadata": {
     "name": "swivPrivacy",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Created with Arcium & Anchor"
+    "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "calculateReward",
-      "docs": [
-        "Calculate reward using encrypted computation"
-      ],
+      "name": "batchCalculateWeights",
       "discriminator": [
-        58,
-        103,
-        84,
-        31,
-        205,
-        107,
-        149,
-        125
+        120,
+        37,
+        151,
+        131,
+        92,
+        2,
+        221,
+        252
       ],
       "accounts": [
         {
-          "name": "protocolState",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  114,
-                  111,
-                  116,
-                  111,
-                  99,
-                  111,
-                  108,
-                  95,
-                  115,
-                  116,
-                  97,
-                  116,
-                  101
-                ]
-              }
-            ]
-          }
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "pool",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -70,179 +47,70 @@ export type SwivPrivacy = {
               },
               {
                 "kind": "account",
-                "path": "pool.pool_id",
+                "path": "pool.name",
                 "account": "pool"
               }
             ]
           }
-        },
-        {
-          "name": "bet",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  98,
-                  101,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool"
-              },
-              {
-                "kind": "account",
-                "path": "user"
-              }
-            ]
-          }
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "batchUndelegateBets",
+      "discriminator": [
+        147,
+        57,
+        30,
+        144,
+        142,
+        241,
+        140,
+        254
+      ],
+      "accounts": [
         {
           "name": "payer",
           "writable": true,
           "signer": true
         },
         {
-          "name": "signPdaAccount",
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "magicProgram",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magicContext",
           "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  83,
-                  105,
-                  103,
-                  110,
-                  101,
-                  114,
-                  65,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "mxeAccount"
-        },
-        {
-          "name": "mempoolAccount",
-          "writable": true
-        },
-        {
-          "name": "executingPool",
-          "writable": true
-        },
-        {
-          "name": "computationAccount",
-          "writable": true
-        },
-        {
-          "name": "compDefAccount"
-        },
-        {
-          "name": "clusterAccount",
-          "writable": true
-        },
-        {
-          "name": "poolAccount",
-          "writable": true,
-          "address": "FsWbPQcJQ2cCyr9ndse13fDqds4F2Ezx2WgTL25Dke4M"
-        },
-        {
-          "name": "clockAccount",
-          "address": "AxygBawEvVwZPetj3yPJb9sGdZvaJYsVguET1zFUQkV"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "arciumProgram",
-          "address": "Bv3Fb9VjzjWGfX18QTUcVycAfeLoQ5zZN6vv2g3cTZxp"
+          "address": "MagicContext1111111111111111111111111111111"
         }
       ],
-      "args": [
-        {
-          "name": "computationOffset",
-          "type": "u64"
-        }
-      ]
+      "args": []
     },
     {
-      "name": "calculateRewardCallback",
-      "docs": [
-        "Callback for reward calculation - distributes the reward"
-      ],
+      "name": "claimReward",
       "discriminator": [
-        209,
-        119,
-        113,
-        239,
-        37,
-        131,
-        24,
-        155
+        149,
+        95,
+        181,
+        242,
+        94,
+        90,
+        158,
+        162
       ],
       "accounts": [
         {
-          "name": "protocolState",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  114,
-                  111,
-                  116,
-                  111,
-                  99,
-                  111,
-                  108,
-                  95,
-                  115,
-                  116,
-                  97,
-                  116,
-                  101
-                ]
-              }
-            ]
-          }
+          "name": "user",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "pool",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.pool_id",
-                "account": "pool"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "poolVault",
@@ -266,130 +134,74 @@ export type SwivPrivacy = {
               },
               {
                 "kind": "account",
-                "path": "pool.pool_id",
-                "account": "pool"
+                "path": "pool"
               }
             ]
           }
         },
         {
-          "name": "bet",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  98,
-                  101,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool"
-              },
-              {
-                "kind": "account",
-                "path": "user"
-              }
-            ]
-          }
+          "name": "userBet",
+          "writable": true
         },
         {
           "name": "userTokenAccount",
           "writable": true
         },
         {
-          "name": "user"
-        },
-        {
           "name": "tokenProgram",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "arciumProgram",
-          "address": "Bv3Fb9VjzjWGfX18QTUcVycAfeLoQ5zZN6vv2g3cTZxp"
-        },
-        {
-          "name": "compDefAccount"
-        },
-        {
-          "name": "instructionsSysvar",
-          "address": "Sysvar1nstructions1111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "output",
-          "type": {
-            "defined": {
-              "name": "computationOutputs",
-              "generics": [
-                {
-                  "kind": "type",
-                  "type": {
-                    "defined": {
-                      "name": "calculateRewardOutput"
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "closePool",
-      "docs": [
-        "Admin function to close a pool (emergency only)"
-      ],
-      "discriminator": [
-        140,
-        189,
-        209,
-        23,
-        239,
-        62,
-        239,
-        11
-      ],
-      "accounts": [
-        {
-          "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool.pool_id",
-                "account": "pool"
-              }
-            ]
-          }
-        },
-        {
-          "name": "admin",
-          "signer": true
         }
       ],
       "args": []
     },
     {
-      "name": "createPool",
-      "docs": [
-        "Create a new prediction pool"
+      "name": "createBetPermission",
+      "discriminator": [
+        49,
+        47,
+        58,
+        136,
+        189,
+        217,
+        159,
+        167
       ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user"
+        },
+        {
+          "name": "userBet"
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "permission",
+          "writable": true
+        },
+        {
+          "name": "permissionProgram"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "reqId",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "createPool",
       "discriminator": [
         233,
         146,
@@ -402,7 +214,7 @@ export type SwivPrivacy = {
       ],
       "accounts": [
         {
-          "name": "protocolState",
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
@@ -418,11 +230,8 @@ export type SwivPrivacy = {
                   111,
                   108,
                   95,
-                  115,
-                  116,
-                  97,
-                  116,
-                  101
+                  118,
+                  50
                 ]
               }
             ]
@@ -441,6 +250,10 @@ export type SwivPrivacy = {
                   111,
                   108
                 ]
+              },
+              {
+                "kind": "account",
+                "path": "admin"
               },
               {
                 "kind": "arg",
@@ -470,8 +283,8 @@ export type SwivPrivacy = {
                 ]
               },
               {
-                "kind": "arg",
-                "path": "poolId"
+                "kind": "account",
+                "path": "pool"
               }
             ]
           }
@@ -483,6 +296,10 @@ export type SwivPrivacy = {
           "name": "admin",
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "adminTokenAccount",
+          "writable": true
         },
         {
           "name": "tokenProgram",
@@ -503,172 +320,294 @@ export type SwivPrivacy = {
           "type": "u64"
         },
         {
-          "name": "assetSymbol",
+          "name": "name",
           "type": "string"
         },
         {
-          "name": "entryFee",
-          "type": "u64"
+          "name": "metadata",
+          "type": {
+            "option": "string"
+          }
         },
         {
-          "name": "targetTimestamp",
+          "name": "startTime",
           "type": "i64"
         },
         {
-          "name": "maxParticipants",
-          "type": "u32"
+          "name": "endTime",
+          "type": "i64"
+        },
+        {
+          "name": "maxAccuracyBuffer",
+          "type": "u64"
+        },
+        {
+          "name": "convictionBonusBps",
+          "type": "u64"
         }
       ]
     },
     {
-      "name": "finalizePool",
-      "docs": [
-        "Finalize pool with actual price from oracle"
-      ],
+      "name": "delegateBet",
       "discriminator": [
-        74,
-        182,
-        193,
-        101,
-        92,
-        152,
-        202,
-        142
+        55,
+        176,
+        95,
+        121,
+        115,
+        103,
+        253,
+        251
       ],
       "accounts": [
         {
-          "name": "pool",
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "bufferUserBet",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  112,
-                  111,
-                  111,
-                  108
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
                 ]
               },
               {
                 "kind": "account",
-                "path": "pool.pool_id",
-                "account": "pool"
+                "path": "userBet"
               }
-            ]
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                112,
+                128,
+                181,
+                43,
+                55,
+                109,
+                127,
+                121,
+                113,
+                47,
+                136,
+                0,
+                12,
+                199,
+                138,
+                104,
+                213,
+                36,
+                4,
+                200,
+                113,
+                58,
+                200,
+                83,
+                124,
+                72,
+                221,
+                6,
+                185,
+                228,
+                7,
+                150
+              ]
+            }
           }
         },
         {
-          "name": "admin",
-          "signer": true
+          "name": "delegationRecordUserBet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "userBet"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegationProgram"
+            }
+          }
+        },
+        {
+          "name": "delegationMetadataUserBet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "userBet"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegationProgram"
+            }
+          }
+        },
+        {
+          "name": "userBet",
+          "writable": true
+        },
+        {
+          "name": "validator"
+        },
+        {
+          "name": "ownerProgram",
+          "address": "8aAVXhM9uNdoijr7YJf3KG8yikHYdAUQZ6kmts9BBVLh"
+        },
+        {
+          "name": "delegationProgram",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "actualPrice",
-          "type": "u64"
+          "name": "requestId",
+          "type": "string"
         }
       ]
     },
     {
-      "name": "initCalculateRewardCompDef",
-      "docs": [
-        "Initialize computation definition for calculate_reward"
-      ],
+      "name": "delegateBetPermission",
       "discriminator": [
-        10,
-        204,
-        160,
-        224,
-        55,
+        188,
+        237,
+        22,
+        77,
+        177,
+        127,
+        248,
+        107
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "userBet",
+          "writable": true
+        },
+        {
+          "name": "permission",
+          "writable": true
+        },
+        {
+          "name": "permissionProgram"
+        },
+        {
+          "name": "delegationProgram"
+        },
+        {
+          "name": "delegationBuffer",
+          "writable": true
+        },
+        {
+          "name": "delegationRecord",
+          "writable": true
+        },
+        {
+          "name": "delegationMetadata",
+          "writable": true
+        },
+        {
+          "name": "validator"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "requestId",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "delegatePool",
+      "discriminator": [
+        209,
         44,
         8,
-        148
+        221,
+        183,
+        173,
+        33,
+        244
       ],
       "accounts": [
         {
-          "name": "payer",
+          "name": "admin",
           "writable": true,
           "signer": true
         },
         {
-          "name": "mxeAccount",
-          "writable": true
-        },
-        {
-          "name": "compDefAccount",
-          "writable": true
-        },
-        {
-          "name": "arciumProgram",
-          "address": "Bv3Fb9VjzjWGfX18QTUcVycAfeLoQ5zZN6vv2g3cTZxp"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "initProcessBetCompDef",
-      "docs": [
-        "Initialize computation definition for process_bet"
-      ],
-      "discriminator": [
-        205,
-        137,
-        6,
-        161,
-        138,
-        70,
-        202,
-        185
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "mxeAccount",
-          "writable": true
-        },
-        {
-          "name": "compDefAccount",
-          "writable": true
-        },
-        {
-          "name": "arciumProgram",
-          "address": "Bv3Fb9VjzjWGfX18QTUcVycAfeLoQ5zZN6vv2g3cTZxp"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "initialize",
-      "docs": [
-        "Initialize the protocol state"
-      ],
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
-      "accounts": [
-        {
-          "name": "protocolState",
-          "writable": true,
+          "name": "protocol",
           "pda": {
             "seeds": [
               {
@@ -683,49 +622,144 @@ export type SwivPrivacy = {
                   111,
                   108,
                   95,
-                  115,
-                  116,
-                  97,
-                  116,
-                  101
+                  118,
+                  50
                 ]
               }
             ]
           }
         },
         {
-          "name": "admin",
+          "name": "bufferPool",
           "writable": true,
-          "signer": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  117,
+                  102,
+                  102,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                112,
+                128,
+                181,
+                43,
+                55,
+                109,
+                127,
+                121,
+                113,
+                47,
+                136,
+                0,
+                12,
+                199,
+                138,
+                104,
+                213,
+                36,
+                4,
+                200,
+                113,
+                58,
+                200,
+                83,
+                124,
+                72,
+                221,
+                6,
+                185,
+                228,
+                7,
+                150
+              ]
+            }
+          }
         },
         {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
+          "name": "delegationRecordPool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegationProgram"
+            }
+          }
+        },
         {
-          "name": "protocolFeeBps",
-          "type": "u16"
-        }
-      ]
-    },
-    {
-      "name": "placeEncryptedBet",
-      "docs": [
-        "Place an encrypted bet"
-      ],
-      "discriminator": [
-        31,
-        225,
-        208,
-        210,
-        139,
-        191,
-        29,
-        247
-      ],
-      "accounts": [
+          "name": "delegationMetadataPool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  108,
+                  101,
+                  103,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "delegationProgram"
+            }
+          }
+        },
         {
           "name": "pool",
           "writable": true,
@@ -742,11 +776,63 @@ export type SwivPrivacy = {
               },
               {
                 "kind": "account",
-                "path": "pool.pool_id",
-                "account": "pool"
+                "path": "admin"
+              },
+              {
+                "kind": "arg",
+                "path": "poolId"
               }
             ]
           }
+        },
+        {
+          "name": "validator"
+        },
+        {
+          "name": "ownerProgram",
+          "address": "8aAVXhM9uNdoijr7YJf3KG8yikHYdAUQZ6kmts9BBVLh"
+        },
+        {
+          "name": "delegationProgram",
+          "address": "DELeGGvXpWV2fqJUhqcF5ZSYMS4JTLjteaAMARRSaeSh"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "poolId",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "emergencyRefund",
+      "discriminator": [
+        188,
+        73,
+        52,
+        195,
+        137,
+        70,
+        180,
+        147
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "userBet",
+          "writable": true
+        },
+        {
+          "name": "pool",
+          "writable": true
         },
         {
           "name": "poolVault",
@@ -770,20 +856,194 @@ export type SwivPrivacy = {
               },
               {
                 "kind": "account",
-                "path": "pool.pool_id",
-                "account": "pool"
+                "path": "pool"
               }
             ]
           }
         },
         {
-          "name": "bet",
+          "name": "userTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "finalizeWeights",
+      "discriminator": [
+        211,
+        20,
+        140,
+        3,
+        104,
+        45,
+        91,
+        73
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "poolVault",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasuryTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initBet",
+      "discriminator": [
+        15,
+        172,
+        254,
+        252,
+        114,
+        198,
+        174,
+        255
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "poolVault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "userTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "userBet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
                   98,
                   101,
                   116
@@ -796,80 +1056,13 @@ export type SwivPrivacy = {
               {
                 "kind": "account",
                 "path": "user"
-              }
-            ]
-          }
-        },
-        {
-          "name": "userTokenAccount",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "signPdaAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
+              },
               {
-                "kind": "const",
-                "value": [
-                  83,
-                  105,
-                  103,
-                  110,
-                  101,
-                  114,
-                  65,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
+                "kind": "arg",
+                "path": "requestId"
               }
             ]
           }
-        },
-        {
-          "name": "mxeAccount"
-        },
-        {
-          "name": "mempoolAccount",
-          "writable": true
-        },
-        {
-          "name": "executingPool",
-          "writable": true
-        },
-        {
-          "name": "computationAccount",
-          "writable": true
-        },
-        {
-          "name": "compDefAccount"
-        },
-        {
-          "name": "clusterAccount",
-          "writable": true
-        },
-        {
-          "name": "poolAccount",
-          "writable": true,
-          "address": "FsWbPQcJQ2cCyr9ndse13fDqds4F2Ezx2WgTL25Dke4M"
-        },
-        {
-          "name": "clockAccount",
-          "address": "AxygBawEvVwZPetj3yPJb9sGdZvaJYsVguET1zFUQkV"
         },
         {
           "name": "tokenProgram",
@@ -880,93 +1073,285 @@ export type SwivPrivacy = {
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "arciumProgram",
-          "address": "Bv3Fb9VjzjWGfX18QTUcVycAfeLoQ5zZN6vv2g3cTZxp"
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "computationOffset",
+          "name": "amount",
           "type": "u64"
         },
         {
-          "name": "ciphertextPrice",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "pubKey",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "nonce",
-          "type": "u128"
+          "name": "requestId",
+          "type": "string"
         }
       ]
     },
     {
-      "name": "processBetCallback",
-      "docs": [
-        "Callback for encrypted bet processing"
-      ],
+      "name": "initializeProtocol",
       "discriminator": [
-        68,
-        206,
-        121,
-        45,
-        221,
-        213,
-        112,
-        178
+        188,
+        233,
+        252,
+        106,
+        134,
+        146,
+        202,
+        91
       ],
       "accounts": [
         {
-          "name": "arciumProgram",
-          "address": "Bv3Fb9VjzjWGfX18QTUcVycAfeLoQ5zZN6vv2g3cTZxp"
+          "name": "protocol",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
         },
         {
-          "name": "compDefAccount"
+          "name": "admin",
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "instructionsSysvar",
-          "address": "Sysvar1nstructions1111111111111111111111111"
+          "name": "treasuryWallet"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "output",
-          "type": {
-            "defined": {
-              "name": "computationOutputs",
-              "generics": [
-                {
-                  "kind": "type",
-                  "type": {
-                    "defined": {
-                      "name": "processBetOutput"
-                    }
-                  }
-                }
-              ]
-            }
+          "name": "protocolFeeBps",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "placeBet",
+      "discriminator": [
+        222,
+        62,
+        67,
+        220,
+        63,
+        166,
+        126,
+        33
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "userBet",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  98,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              },
+              {
+                "kind": "arg",
+                "path": "requestId"
+              }
+            ]
           }
+        }
+      ],
+      "args": [
+        {
+          "name": "prediction",
+          "type": "u64"
+        },
+        {
+          "name": "requestId",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "processUndelegation",
+      "discriminator": [
+        196,
+        28,
+        41,
+        206,
+        48,
+        37,
+        51,
+        167
+      ],
+      "accounts": [
+        {
+          "name": "baseAccount",
+          "writable": true
+        },
+        {
+          "name": "buffer"
+        },
+        {
+          "name": "payer",
+          "writable": true
+        },
+        {
+          "name": "systemProgram"
+        }
+      ],
+      "args": [
+        {
+          "name": "accountSeeds",
+          "type": {
+            "vec": "bytes"
+          }
+        }
+      ]
+    },
+    {
+      "name": "resolvePool",
+      "discriminator": [
+        191,
+        164,
+        190,
+        142,
+        178,
+        198,
+        162,
+        249
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "finalOutcome",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "setPause",
+      "discriminator": [
+        63,
+        32,
+        154,
+        2,
+        56,
+        103,
+        79,
+        45
+      ],
+      "accounts": [
+        {
+          "name": "protocol",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
         }
       ]
     },
     {
       "name": "transferAdmin",
-      "docs": [
-        "Transfer admin authority to a new address"
-      ],
       "discriminator": [
         42,
         242,
@@ -979,7 +1364,12 @@ export type SwivPrivacy = {
       ],
       "accounts": [
         {
-          "name": "protocolState",
+          "name": "currentAdmin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
@@ -995,19 +1385,12 @@ export type SwivPrivacy = {
                   111,
                   108,
                   95,
-                  115,
-                  116,
-                  97,
-                  116,
-                  101
+                  118,
+                  50
                 ]
               }
             ]
           }
-        },
-        {
-          "name": "admin",
-          "signer": true
         }
       ],
       "args": [
@@ -1018,23 +1401,115 @@ export type SwivPrivacy = {
       ]
     },
     {
-      "name": "updateProtocolFee",
-      "docs": [
-        "Update the protocol fee basis points"
-      ],
+      "name": "undelegatePool",
       "discriminator": [
-        170,
-        136,
-        6,
-        60,
+        75,
+        22,
+        17,
         43,
-        130,
-        81,
-        96
+        47,
+        201,
+        22,
+        246
       ],
       "accounts": [
         {
-          "name": "protocolState",
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true
+        },
+        {
+          "name": "magicProgram",
+          "address": "Magic11111111111111111111111111111111111111"
+        },
+        {
+          "name": "magicContext",
+          "writable": true,
+          "address": "MagicContext1111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "updateBet",
+      "discriminator": [
+        198,
+        86,
+        110,
+        99,
+        122,
+        242,
+        136,
+        221
+      ],
+      "accounts": [
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "userBet",
+          "writable": true
+        },
+        {
+          "name": "pool"
+        }
+      ],
+      "args": [
+        {
+          "name": "newPrediction",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateConfig",
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1050,108 +1525,35 @@ export type SwivPrivacy = {
                   111,
                   108,
                   95,
-                  115,
-                  116,
-                  97,
-                  116,
-                  101
+                  118,
+                  50
                 ]
               }
             ]
           }
         },
         {
-          "name": "admin",
-          "signer": true
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "newFeeBps",
-          "type": "u16"
+          "name": "newTreasury",
+          "type": {
+            "option": "pubkey"
+          }
+        },
+        {
+          "name": "newProtocolFeeBps",
+          "type": {
+            "option": "u64"
+          }
         }
       ]
     }
   ],
   "accounts": [
-    {
-      "name": "clockAccount",
-      "discriminator": [
-        152,
-        171,
-        158,
-        195,
-        75,
-        61,
-        51,
-        8
-      ]
-    },
-    {
-      "name": "cluster",
-      "discriminator": [
-        236,
-        225,
-        118,
-        228,
-        173,
-        106,
-        18,
-        60
-      ]
-    },
-    {
-      "name": "computationDefinitionAccount",
-      "discriminator": [
-        245,
-        176,
-        217,
-        221,
-        253,
-        104,
-        172,
-        200
-      ]
-    },
-    {
-      "name": "encryptedBet",
-      "discriminator": [
-        192,
-        204,
-        78,
-        229,
-        173,
-        0,
-        177,
-        219
-      ]
-    },
-    {
-      "name": "feePool",
-      "discriminator": [
-        172,
-        38,
-        77,
-        146,
-        148,
-        5,
-        51,
-        242
-      ]
-    },
-    {
-      "name": "mxeAccount",
-      "discriminator": [
-        103,
-        26,
-        85,
-        250,
-        179,
-        159,
-        17,
-        117
-      ]
-    },
     {
       "name": "pool",
       "discriminator": [
@@ -1166,239 +1568,371 @@ export type SwivPrivacy = {
       ]
     },
     {
-      "name": "protocolState",
+      "name": "protocol",
       "discriminator": [
-        33,
-        51,
-        173,
-        134,
-        35,
-        140,
-        195,
-        248
+        45,
+        39,
+        101,
+        43,
+        115,
+        72,
+        131,
+        40
       ]
     },
     {
-      "name": "signerAccount",
+      "name": "userBet",
       "discriminator": [
-        127,
-        212,
-        7,
         180,
-        17,
-        50,
-        249,
-        193
+        131,
+        8,
+        241,
+        60,
+        243,
+        46,
+        63
       ]
     }
   ],
   "events": [
     {
-      "name": "adminTransferredEvent",
-      "discriminator": [
-        158,
-        233,
-        64,
-        41,
-        184,
-        122,
-        98,
-        76
-      ]
-    },
-    {
-      "name": "betProcessedEvent",
-      "discriminator": [
-        201,
-        222,
-        124,
-        41,
-        221,
-        245,
-        101,
-        44
-      ]
-    },
-    {
-      "name": "encryptedBetPlacedEvent",
+      "name": "adminTransferred",
       "discriminator": [
         255,
-        150,
-        126,
-        34,
-        248,
-        115,
-        36,
-        21
+        147,
+        182,
+        5,
+        199,
+        217,
+        38,
+        179
       ]
     },
     {
-      "name": "poolCreatedEvent",
+      "name": "assetConfigUpdated",
       "discriminator": [
-        25,
+        12,
+        97,
+        64,
         94,
-        75,
-        47,
-        112,
-        99,
-        53,
-        63
+        123,
+        177,
+        111,
+        10
       ]
     },
     {
-      "name": "poolFinalizedEvent",
+      "name": "betDelegated",
       "discriminator": [
-        70,
+        223,
+        39,
+        83,
+        220,
+        92,
+        59,
+        154,
+        11
+      ]
+    },
+    {
+      "name": "betPlaced",
+      "discriminator": [
+        88,
+        88,
         145,
-        207,
-        189,
-        138,
-        172,
-        208,
+        226,
+        126,
+        206,
+        32,
+        0
+      ]
+    },
+    {
+      "name": "betRefunded",
+      "discriminator": [
+        32,
+        234,
+        173,
+        102,
+        106,
+        4,
+        2,
+        203
+      ]
+    },
+    {
+      "name": "betUndelegated",
+      "discriminator": [
+        249,
+        154,
+        196,
+        190,
+        74,
+        153,
+        244,
+        122
+      ]
+    },
+    {
+      "name": "betUpdated",
+      "discriminator": [
+        184,
+        177,
+        75,
+        30,
+        151,
+        135,
+        38,
+        237
+      ]
+    },
+    {
+      "name": "configUpdated",
+      "discriminator": [
+        40,
+        241,
+        230,
+        122,
+        11,
+        19,
+        198,
         194
       ]
     },
     {
-      "name": "protocolFeeUpdatedEvent",
+      "name": "outcomeCalculated",
       "discriminator": [
-        248,
-        27,
-        112,
-        250,
-        51,
-        251,
-        106,
-        195
+        35,
+        255,
+        97,
+        66,
+        13,
+        30,
+        213,
+        96
       ]
     },
     {
-      "name": "rewardClaimedEvent",
+      "name": "pauseChanged",
       "discriminator": [
-        246,
-        43,
-        215,
-        228,
+        238,
+        188,
+        213,
+        78,
+        134,
+        209,
+        178,
+        218
+      ]
+    },
+    {
+      "name": "poolCreated",
+      "discriminator": [
+        202,
+        44,
+        41,
+        88,
+        104,
+        220,
+        157,
+        82
+      ]
+    },
+    {
+      "name": "poolDelegated",
+      "discriminator": [
+        151,
+        191,
+        195,
+        52,
+        248,
+        173,
+        72,
+        116
+      ]
+    },
+    {
+      "name": "poolResolved",
+      "discriminator": [
+        37,
+        148,
         82,
+        156,
+        128,
+        131,
+        201,
+        171
+      ]
+    },
+    {
+      "name": "poolSecretsDelegated",
+      "discriminator": [
+        206,
+        56,
+        176,
+        117,
+        52,
+        5,
+        143,
+        222
+      ]
+    },
+    {
+      "name": "poolSecretsUndelegated",
+      "discriminator": [
+        12,
+        188,
+        186,
+        95,
+        104,
+        237,
+        166,
+        136
+      ]
+    },
+    {
+      "name": "poolUndelegated",
+      "discriminator": [
+        223,
+        51,
+        251,
+        176,
+        89,
+        9,
+        173,
+        114
+      ]
+    },
+    {
+      "name": "protocolInitialized",
+      "discriminator": [
+        173,
+        122,
+        168,
+        254,
+        9,
+        118,
+        76,
+        132
+      ]
+    },
+    {
+      "name": "rewardClaimed",
+      "discriminator": [
         49,
-        230,
-        56
+        28,
+        87,
+        84,
+        158,
+        48,
+        229,
+        175
+      ]
+    },
+    {
+      "name": "weightsFinalized",
+      "discriminator": [
+        104,
+        182,
+        174,
+        242,
+        15,
+        117,
+        69,
+        47
       ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "invalidFee",
-      "msg": "Invalid protocol fee"
+      "name": "paused",
+      "msg": "Global protocol is paused."
     },
     {
       "code": 6001,
-      "name": "invalidNewAdmin",
-      "msg": "Invalid new admin"
+      "name": "unauthorized",
+      "msg": "Unauthorized admin action."
     },
     {
       "code": 6002,
-      "name": "assetSymbolTooLong",
-      "msg": "Asset symbol too long"
+      "name": "mathOverflow",
+      "msg": "Math operation overflow."
     },
     {
       "code": 6003,
-      "name": "invalidEntryFee",
-      "msg": "Invalid entry fee"
+      "name": "insufficientLiquidity",
+      "msg": "Insufficient liquidity in pool."
     },
     {
       "code": 6004,
-      "name": "invalidTimestamp",
-      "msg": "Invalid timestamp"
+      "name": "alreadyClaimed",
+      "msg": "Bet is already claimed."
     },
     {
       "code": 6005,
-      "name": "invalidMaxParticipants",
-      "msg": "Invalid max participants"
+      "name": "betAlreadyInitialized",
+      "msg": "Bet is already initialized."
     },
     {
       "code": 6006,
-      "name": "poolNotActive",
-      "msg": "Pool is not active"
+      "name": "durationTooShort",
+      "msg": "Bet duration is too short."
     },
     {
       "code": 6007,
-      "name": "predictionTimePassed",
-      "msg": "Prediction time has passed"
+      "name": "invalidAsset",
+      "msg": "Invalid asset symbol."
     },
     {
       "code": 6008,
-      "name": "poolFull",
-      "msg": "Pool is full"
+      "name": "assetNotWhitelisted",
+      "msg": "Asset is not whitelisted."
     },
     {
       "code": 6009,
-      "name": "invalidPredictedPrice",
-      "msg": "Invalid predicted price"
+      "name": "seedMismatch",
+      "msg": "Seeds do not result in a valid address."
     },
     {
       "code": 6010,
-      "name": "predictionTimeNotReached",
-      "msg": "Prediction time not reached yet"
+      "name": "poolMismatch",
+      "msg": "Bet does not match the current pool/asset config"
     },
     {
       "code": 6011,
-      "name": "invalidActualPrice",
-      "msg": "Invalid actual price"
+      "name": "invalidPrivateKey",
+      "msg": "Private Key must be 32 bytes long."
     },
     {
       "code": 6012,
-      "name": "poolNotFinalized",
-      "msg": "Pool not finalized"
+      "name": "settlementTooEarly",
+      "msg": "Admin force-settlement is not yet allowed for this bet."
     },
     {
       "code": 6013,
-      "name": "alreadyClaimed",
-      "msg": "Reward already claimed"
+      "name": "timeoutNotMet",
+      "msg": "Emergency refund timeout has not been met."
     },
     {
       "code": 6014,
-      "name": "unauthorized",
-      "msg": "unauthorized"
+      "name": "notCalculatedYet",
+      "msg": "Bet has not been calculated by the TEE yet."
     },
     {
       "code": 6015,
-      "name": "abortedComputation",
-      "msg": "The computation was aborted"
+      "name": "undelegationTooEarly",
+      "msg": "You must wait for the pool to end before undelegating to preserve privacy."
     },
     {
       "code": 6016,
-      "name": "clusterNotSet",
-      "msg": "Cluster not set"
+      "name": "decryptionFailed",
+      "msg": "TEE failed to decrypt the prediction."
     }
   ],
   "types": [
     {
-      "name": "activation",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "activationEpoch",
-            "type": {
-              "defined": {
-                "name": "epoch"
-              }
-            }
-          },
-          {
-            "name": "deactivationEpoch",
-            "type": {
-              "defined": {
-                "name": "epoch"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "adminTransferredEvent",
+      "name": "adminTransferred",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1414,652 +1948,201 @@ export type SwivPrivacy = {
       }
     },
     {
-      "name": "betProcessedEvent",
+      "name": "assetConfigUpdated",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "success",
-            "type": {
-              "defined": {
-                "name": "sharedEncryptedStruct",
-                "generics": [
-                  {
-                    "kind": "const",
-                    "value": "1"
-                  }
-                ]
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "calculateRewardOutput",
-      "docs": [
-        "The output of the callback instruction. Provided as a struct with ordered fields",
-        "as anchor does not support tuples and tuple structs yet."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "field0",
-            "type": {
-              "defined": {
-                "name": "sharedEncryptedStruct",
-                "generics": [
-                  {
-                    "kind": "const",
-                    "value": "1"
-                  }
-                ]
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "circuitSource",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "local",
-            "fields": [
-              {
-                "defined": {
-                  "name": "localCircuitSource"
-                }
-              }
-            ]
-          },
-          {
-            "name": "onChain",
-            "fields": [
-              {
-                "defined": {
-                  "name": "onChainCircuitSource"
-                }
-              }
-            ]
-          },
-          {
-            "name": "offChain",
-            "fields": [
-              {
-                "defined": {
-                  "name": "offChainCircuitSource"
-                }
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "clockAccount",
-      "docs": [
-        "An account storing the current network epoch"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "startEpoch",
-            "type": {
-              "defined": {
-                "name": "epoch"
-              }
-            }
-          },
-          {
-            "name": "currentEpoch",
-            "type": {
-              "defined": {
-                "name": "epoch"
-              }
-            }
-          },
-          {
-            "name": "startEpochTimestamp",
-            "type": {
-              "defined": {
-                "name": "timestamp"
-              }
-            }
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "cluster",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "maxSize",
-            "type": "u32"
-          },
-          {
-            "name": "activation",
-            "type": {
-              "defined": {
-                "name": "activation"
-              }
-            }
-          },
-          {
-            "name": "maxCapacity",
-            "type": "u64"
-          },
-          {
-            "name": "cuPrice",
-            "type": "u64"
-          },
-          {
-            "name": "cuPriceProposals",
-            "type": {
-              "array": [
-                "u64",
-                32
-              ]
-            }
-          },
-          {
-            "name": "lastUpdatedEpoch",
-            "type": {
-              "defined": {
-                "name": "epoch"
-              }
-            }
-          },
-          {
-            "name": "mxes",
-            "type": {
-              "vec": "pubkey"
-            }
-          },
-          {
-            "name": "nodes",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "nodeRef"
-                }
-              }
-            }
-          },
-          {
-            "name": "pendingNodes",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "nodeRef"
-                }
-              }
-            }
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "computationDefinitionAccount",
-      "docs": [
-        "An account representing a [ComputationDefinition] in a MXE."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "finalizationAuthority",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "cuAmount",
-            "type": "u64"
-          },
-          {
-            "name": "definition",
-            "type": {
-              "defined": {
-                "name": "computationDefinitionMeta"
-              }
-            }
-          },
-          {
-            "name": "circuitSource",
-            "type": {
-              "defined": {
-                "name": "circuitSource"
-              }
-            }
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "computationDefinitionMeta",
-      "docs": [
-        "A computation definition for execution in a MXE."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "circuitLen",
-            "type": "u32"
-          },
-          {
-            "name": "signature",
-            "type": {
-              "defined": {
-                "name": "computationSignature"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "computationOutputs",
-      "generics": [
-        {
-          "kind": "type",
-          "name": "o"
-        }
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "success",
-            "fields": [
-              {
-                "generic": "o"
-              }
-            ]
-          },
-          {
-            "name": "failure"
-          }
-        ]
-      }
-    },
-    {
-      "name": "computationSignature",
-      "docs": [
-        "The signature of a computation defined in a [ComputationDefinition]."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "parameters",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "parameter"
-                }
-              }
-            }
-          },
-          {
-            "name": "outputs",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "output"
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "encryptedBet",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "user",
-            "type": "pubkey"
-          },
-          {
-            "name": "pool",
-            "type": "pubkey"
-          },
-          {
-            "name": "encryptedPredictedPrice",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "pubKey",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "nonce",
-            "type": "u128"
-          },
-          {
-            "name": "stakeAmount",
-            "type": "u64"
-          },
-          {
-            "name": "claimed",
-            "type": "bool"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "encryptedBetPlacedEvent",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "poolId",
-            "type": "u64"
-          },
-          {
-            "name": "user",
-            "type": "pubkey"
-          },
-          {
-            "name": "stakeAmount",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "epoch",
-      "docs": [
-        "The network epoch"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          "u64"
-        ]
-      }
-    },
-    {
-      "name": "feePool",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "localCircuitSource",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "mxeKeygen"
-          }
-        ]
-      }
-    },
-    {
-      "name": "mxeAccount",
-      "docs": [
-        "A MPC Execution Environment."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "cluster",
-            "type": {
-              "option": "u32"
-            }
-          },
-          {
-            "name": "utilityPubkeys",
-            "type": {
-              "defined": {
-                "name": "setUnset",
-                "generics": [
-                  {
-                    "kind": "type",
-                    "type": {
-                      "defined": {
-                        "name": "utilityPubkeys"
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          {
-            "name": "fallbackClusters",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "rejectedClusters",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "computationDefinitions",
-            "type": {
-              "vec": "u32"
-            }
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "nodeRef",
-      "docs": [
-        "A reference to a node in the cluster.",
-        "The offset is to derive the Node Account.",
-        "The current_total_rewards is the total rewards the node has received so far in the current",
-        "epoch."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "offset",
-            "type": "u32"
-          },
-          {
-            "name": "currentTotalRewards",
-            "type": "u64"
-          },
-          {
-            "name": "vote",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "offChainCircuitSource",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "source",
+            "name": "symbol",
             "type": "string"
           },
           {
-            "name": "hash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            "name": "pythFeed",
+            "type": "pubkey"
+          },
+          {
+            "name": "volatilityFactor",
+            "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "onChainCircuitSource",
+      "name": "betDelegated",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "isCompleted",
-            "type": "bool"
+            "name": "betAddress",
+            "type": "pubkey"
           },
           {
-            "name": "uploadAuth",
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "requestId",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "betPlaced",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "betAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "poolIdentifier",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "endTimestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "betRefunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "betAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "isEmergency",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "betStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "initialized"
+          },
+          {
+            "name": "active"
+          },
+          {
+            "name": "calculated"
+          },
+          {
+            "name": "claimed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "betUndelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "betAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "isBatch",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "betUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "betAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
             "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "output",
-      "docs": [
-        "An output of a computation.",
-        "We currently don't support encrypted outputs yet since encrypted values are passed via",
-        "data objects."
-      ],
+      "name": "configUpdated",
       "type": {
-        "kind": "enum",
-        "variants": [
+        "kind": "struct",
+        "fields": [
           {
-            "name": "plaintextBool"
+            "name": "treasury",
+            "type": {
+              "option": "pubkey"
+            }
           },
           {
-            "name": "plaintextU8"
-          },
-          {
-            "name": "plaintextU16"
-          },
-          {
-            "name": "plaintextU32"
-          },
-          {
-            "name": "plaintextU64"
-          },
-          {
-            "name": "plaintextU128"
-          },
-          {
-            "name": "ciphertext"
-          },
-          {
-            "name": "arcisPubkey"
-          },
-          {
-            "name": "plaintextFloat"
-          },
-          {
-            "name": "plaintextPoint"
+            "name": "protocolFeeBps",
+            "type": {
+              "option": "u64"
+            }
           }
         ]
       }
     },
     {
-      "name": "parameter",
-      "docs": [
-        "A parameter of a computation.",
-        "We differentiate between plaintext and encrypted parameters and data objects.",
-        "Plaintext parameters are directly provided as their value.",
-        "Encrypted parameters are provided as an offchain reference to the data.",
-        "Data objects are provided as a reference to the data object account."
-      ],
+      "name": "outcomeCalculated",
       "type": {
-        "kind": "enum",
-        "variants": [
+        "kind": "struct",
+        "fields": [
           {
-            "name": "plaintextBool"
+            "name": "betAddress",
+            "type": "pubkey"
           },
           {
-            "name": "plaintextU8"
+            "name": "user",
+            "type": "pubkey"
           },
           {
-            "name": "plaintextU16"
-          },
+            "name": "weight",
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "pauseChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            "name": "plaintextU32"
-          },
-          {
-            "name": "plaintextU64"
-          },
-          {
-            "name": "plaintextU128"
-          },
-          {
-            "name": "ciphertext"
-          },
-          {
-            "name": "arcisPubkey"
-          },
-          {
-            "name": "arcisSignature"
-          },
-          {
-            "name": "plaintextFloat"
-          },
-          {
-            "name": "manticoreAlgo"
-          },
-          {
-            "name": "inputDataset"
+            "name": "isPaused",
+            "type": "bool"
           }
         ]
       }
@@ -2070,297 +2153,295 @@ export type SwivPrivacy = {
         "kind": "struct",
         "fields": [
           {
-            "name": "poolId",
-            "type": "u64"
-          },
-          {
             "name": "admin",
             "type": "pubkey"
           },
           {
-            "name": "assetSymbol",
+            "name": "name",
             "type": "string"
           },
           {
-            "name": "entryFee",
+            "name": "poolId",
             "type": "u64"
           },
           {
-            "name": "targetTimestamp",
+            "name": "tokenMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "startTime",
             "type": "i64"
           },
           {
-            "name": "maxParticipants",
-            "type": "u32"
+            "name": "endTime",
+            "type": "i64"
           },
           {
-            "name": "totalParticipants",
-            "type": "u32"
-          },
-          {
-            "name": "totalPoolAmount",
+            "name": "vaultBalance",
             "type": "u64"
           },
           {
-            "name": "status",
+            "name": "maxAccuracyBuffer",
+            "type": "u64"
+          },
+          {
+            "name": "convictionBonusBps",
+            "type": "u64"
+          },
+          {
+            "name": "metadata",
             "type": {
-              "defined": {
-                "name": "poolStatus"
-              }
+              "option": "string"
             }
           },
           {
-            "name": "actualPrice",
+            "name": "resolutionTarget",
+            "type": "u64"
+          },
+          {
+            "name": "isResolved",
+            "type": "bool"
+          },
+          {
+            "name": "resolutionTs",
+            "type": "i64"
+          },
+          {
+            "name": "totalWeight",
+            "type": "u128"
+          },
+          {
+            "name": "weightFinalized",
+            "type": "bool"
+          },
+          {
+            "name": "totalParticipants",
             "type": "u64"
           },
           {
             "name": "bump",
             "type": "u8"
-          },
-          {
-            "name": "vaultBump",
-            "type": "u8"
           }
         ]
       }
     },
     {
-      "name": "poolCreatedEvent",
+      "name": "poolCreated",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "poolId",
-            "type": "u64"
-          },
-          {
-            "name": "assetSymbol",
+            "name": "poolName",
             "type": "string"
           },
           {
-            "name": "entryFee",
-            "type": "u64"
-          },
-          {
-            "name": "targetTimestamp",
+            "name": "startTime",
             "type": "i64"
           },
           {
-            "name": "maxParticipants",
-            "type": "u32"
+            "name": "endTime",
+            "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "poolFinalizedEvent",
+      "name": "poolDelegated",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "poolId",
-            "type": "u64"
-          },
-          {
-            "name": "actualPrice",
-            "type": "u64"
-          },
-          {
-            "name": "totalPoolAmount",
-            "type": "u64"
+            "name": "poolAddress",
+            "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "poolStatus",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "active"
-          },
-          {
-            "name": "finalized"
-          },
-          {
-            "name": "closed"
-          }
-        ]
-      }
-    },
-    {
-      "name": "processBetOutput",
-      "docs": [
-        "The output of the callback instruction. Provided as a struct with ordered fields",
-        "as anchor does not support tuples and tuple structs yet."
-      ],
+      "name": "poolResolved",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "field0",
-            "type": {
-              "defined": {
-                "name": "sharedEncryptedStruct",
-                "generics": [
-                  {
-                    "kind": "const",
-                    "value": "1"
-                  }
-                ]
-              }
-            }
+            "name": "poolName",
+            "type": "string"
+          },
+          {
+            "name": "finalOutcome",
+            "type": "u64"
+          },
+          {
+            "name": "resolutionTs",
+            "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "protocolFeeUpdatedEvent",
+      "name": "poolSecretsDelegated",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "oldFeeBps",
-            "type": "u16"
+            "name": "poolAddress",
+            "type": "pubkey"
           },
           {
-            "name": "newFeeBps",
-            "type": "u16"
+            "name": "secretsAddress",
+            "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "protocolState",
+      "name": "poolSecretsUndelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "poolAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "secretsAddress",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "poolUndelegated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "poolAddress",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "protocol",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasuryWallet",
             "type": "pubkey"
           },
           {
             "name": "protocolFeeBps",
-            "type": "u16"
-          },
-          {
-            "name": "totalPoolsCreated",
             "type": "u64"
           },
           {
-            "name": "bump",
-            "type": "u8"
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "totalUsers",
+            "type": "u64"
+          },
+          {
+            "name": "batchSettleWaitDuration",
+            "type": "i64"
+          },
+          {
+            "name": "totalPools",
+            "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "rewardClaimedEvent",
+      "name": "protocolInitialized",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "poolId",
-            "type": "u64"
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "feeWallet",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rewardClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "betAddress",
+            "type": "pubkey"
           },
           {
             "name": "user",
             "type": "pubkey"
           },
           {
-            "name": "rewardAmount",
-            "type": "u64"
-          },
-          {
-            "name": "accuracyBps",
+            "name": "amount",
             "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "setUnset",
-      "generics": [
-        {
-          "kind": "type",
-          "name": "t"
-        }
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "set",
-            "fields": [
-              {
-                "generic": "t"
-              }
-            ]
-          },
-          {
-            "name": "unset",
-            "fields": [
-              {
-                "generic": "t"
-              },
-              {
-                "vec": "bool"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "sharedEncryptedStruct",
-      "generics": [
-        {
-          "kind": "const",
-          "name": "len",
-          "type": "usize"
-        }
-      ],
+      "name": "userBet",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "encryptionKey",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
+            "name": "owner",
+            "type": "pubkey"
           },
           {
-            "name": "nonce",
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "deposit",
+            "type": "u64"
+          },
+          {
+            "name": "endTimestamp",
+            "type": "i64"
+          },
+          {
+            "name": "creationTs",
+            "type": "i64"
+          },
+          {
+            "name": "updateCount",
+            "type": "u32"
+          },
+          {
+            "name": "calculatedWeight",
             "type": "u128"
           },
           {
-            "name": "ciphertexts",
+            "name": "isWeightAdded",
+            "type": "bool"
+          },
+          {
+            "name": "prediction",
+            "type": "u64"
+          },
+          {
+            "name": "status",
             "type": {
-              "array": [
-                {
-                  "array": [
-                    "u8",
-                    32
-                  ]
-                },
-                {
-                  "generic": "len"
-                }
-              ]
+              "defined": {
+                "name": "betStatus"
+              }
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "signerAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
+          },
           {
             "name": "bump",
             "type": "u8"
@@ -2369,57 +2450,21 @@ export type SwivPrivacy = {
       }
     },
     {
-      "name": "timestamp",
+      "name": "weightsFinalized",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "timestamp",
+            "name": "poolName",
+            "type": "string"
+          },
+          {
+            "name": "totalWeight",
+            "type": "u128"
+          },
+          {
+            "name": "feeDeducted",
             "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "utilityPubkeys",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "x25519Pubkey",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "ed25519VerifyingKey",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "elgamalPubkey",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "pubkeyValidityProof",
-            "type": {
-              "array": [
-                "u8",
-                64
-              ]
-            }
           }
         ]
       }

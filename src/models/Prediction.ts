@@ -1,31 +1,56 @@
 import { supabase } from '../config/supabaseClient';
 
-export interface Prediction {
+export type BetStatus = 'initialized' | 'active' | 'calculated' | 'claimed';
+
+export interface UserBet {
   id: string;
-  pool_id: string;
   user_wallet: string;
-  amount: number;
+  pool_pubkey: string;
+  pool_id: number;
+  deposit: number;
+  prediction: number;
+  calculated_weight: string;
+  is_weight_added: boolean;
+  status: BetStatus;
+  creation_ts: number;
+  update_count: number;
+  end_timestamp: number;
+  bet_pubkey: string;
   reward?: number;
-  status: 'pending' | 'resolved' | 'claimed';
   created_at: string;
+  last_synced_at: string;
 }
 
 export interface UserPredictionStats {
-  activePredictions: number;
+  activeBets: number;
   totalStaked: number;
   totalRewards: number;
-  avgAccuracy: number;
+  totalClaimed: number;
 }
 
 export class PredictionModel {
-  static async create(predictionData: {
-    pool_id: string;
+  /**
+   * Create a new user bet
+   */
+  static async create(betData: {
     user_wallet: string;
-    amount: number;
-  }): Promise<Prediction> {
+    pool_pubkey: string;
+    pool_id: number;
+    deposit: number;
+    end_timestamp: number;
+    bet_pubkey: string;
+  }): Promise<UserBet> {
     const { data, error } = await supabase
-      .from('predictions')
-      .insert([{ ...predictionData, status: 'pending' }])
+      .from('user_bets')
+      .insert([{
+        ...betData,
+        prediction: 0,
+        calculated_weight: '0',
+        is_weight_added: false,
+        status: 'initialized',
+        creation_ts: Math.floor(Date.now() / 1000),
+        update_count: 0,
+      }])
       .select()
       .single();
 
@@ -33,21 +58,41 @@ export class PredictionModel {
     return data;
   }
 
-  static async findById(id: string): Promise<Prediction | null> {
+  /**
+   * Find bet by ID
+   */
+  static async findById(id: string): Promise<UserBet | null> {
     const { data, error } = await supabase
-      .from('predictions')
+      .from('user_bets')
       .select('*')
       .eq('id', id)
       .single();
 
     if (error && error.code !== 'PGRST116') throw error;
-    return data;
+    return data || null;
   }
 
-  static async findByUser(userWallet: string): Promise<Prediction[]> {
+  /**
+   * Find bet by on-chain pubkey
+   */
+  static async findByPubkey(betPubkey: string): Promise<UserBet | null> {
     const { data, error } = await supabase
-      .from('predictions')
-      .select('*, pools(*)')
+      .from('user_bets')
+      .select('*')
+      .eq('bet_pubkey', betPubkey)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
+  }
+
+  /**
+   * Find all bets for a user
+   */
+  static async findByUser(userWallet: string): Promise<UserBet[]> {
+    const { data, error } = await supabase
+      .from('user_bets')
+      .select('*')
       .eq('user_wallet', userWallet)
       .order('created_at', { ascending: false });
 
@@ -55,9 +100,12 @@ export class PredictionModel {
     return data || [];
   }
 
-  static async findByPool(poolId: string): Promise<Prediction[]> {
+  /**
+   * Find all bets in a pool
+   */
+  static async findByPool(poolId: number): Promise<UserBet[]> {
     const { data, error } = await supabase
-      .from('predictions')
+      .from('user_bets')
       .select('*')
       .eq('pool_id', poolId);
 
@@ -65,10 +113,28 @@ export class PredictionModel {
     return data || [];
   }
 
-  static async update(id: string, updates: Partial<Prediction>): Promise<Prediction> {
+  /**
+   * Find active bets for a user
+   */
+  static async findActiveByUser(userWallet: string): Promise<UserBet[]> {
     const { data, error } = await supabase
-      .from('predictions')
-      .update(updates)
+      .from('user_bets')
+      .select('*')
+      .eq('user_wallet', userWallet)
+      .in('status', ['active', 'calculated'])
+      .order('end_timestamp', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Update bet status
+   */
+  static async updateStatus(id: string, status: BetStatus): Promise<UserBet> {
+    const { data, error } = await supabase
+      .from('user_bets')
+      .update({ status, last_synced_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
@@ -77,66 +143,107 @@ export class PredictionModel {
     return data;
   }
 
-  static async updateMany(ids: string[], updates: Partial<Prediction>): Promise<void> {
-    const { error } = await supabase
-      .from('predictions')
-      .update(updates)
-      .in('id', ids);
+  /**
+   * Update bet with on-chain calculation
+   */
+  static async updateWithCalculation(id: string, {
+    calculatedWeight,
+    isWeightAdded,
+    status,
+  }: {
+    calculatedWeight: string;
+    isWeightAdded: boolean;
+    status: BetStatus;
+  }): Promise<UserBet> {
+    const { data, error } = await supabase
+      .from('user_bets')
+      .update({
+        calculated_weight: calculatedWeight,
+        is_weight_added: isWeightAdded,
+        status,
+        last_synced_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
     if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Claim reward
+   */
+  static async claimReward(id: string, reward: number): Promise<UserBet> {
+    const { data, error } = await supabase
+      .from('user_bets')
+      .update({
+        status: 'claimed',
+        reward,
+        last_synced_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Sync bet state from on-chain
+   */
+  static async syncFromChain(id: string, chainData: any): Promise<UserBet> {
+    const { data, error } = await supabase
+      .from('user_bets')
+      .update({
+        prediction: chainData.prediction.toNumber(),
+        calculated_weight: chainData.calculatedWeight.toString(),
+        is_weight_added: chainData.isWeightAdded,
+        status: chainData.status,
+        update_count: chainData.updateCount,
+        last_synced_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
   /**
    * Get user prediction statistics
    */
   static async getUserStats(userWallet: string): Promise<UserPredictionStats> {
-    const predictions = await this.findByUser(userWallet);
+    const bets = await this.findByUser(userWallet);
 
     const stats: UserPredictionStats = {
-      activePredictions: 0,
+      activeBets: 0,
       totalStaked: 0,
       totalRewards: 0,
-      avgAccuracy: 0,
+      totalClaimed: 0,
     };
 
-    if (predictions.length === 0) {
+    if (bets.length === 0) {
       return stats;
     }
 
-    let totalAccuracy = 0;
-    let accuracyCount = 0;
-
-    predictions.forEach((prediction) => {
-      // Active predictions (pending)
-      if (prediction.status === 'pending') {
-        stats.activePredictions++;
+    bets.forEach((bet) => {
+      // Active bets
+      if (bet.status === 'active' || bet.status === 'calculated') {
+        stats.activeBets++;
       }
 
       // Total staked
-      stats.totalStaked += prediction.amount;
+      stats.totalStaked += bet.deposit;
 
-      // Total rewards (won + claimed)
-      if (prediction.reward) {
-        stats.totalRewards += prediction.reward;
+      // Total rewards (claimed)
+      if (bet.status === 'claimed' && bet.reward) {
+        stats.totalRewards += bet.reward;
+        stats.totalClaimed++;
       }
-
-      // Calculate accuracy (only for finalized predictions)
-      // Note: Actual accuracy is calculated on-chain based on encrypted predictions
-      // This is a simplified version based on win/loss
-      // if (prediction.status === 'won' || prediction.status === 'lost' || prediction.status === 'claimed') {
-      //   accuracyCount++;
-      //   if (prediction.status === 'won' || prediction.status === 'claimed') {
-      //     // For simplicity, winners get 100% accuracy in this calculation
-      //     // Real accuracy is calculated on-chain
-      //     totalAccuracy += 100;
-      //   }
-      // }
     });
-
-    // Average accuracy
-    if (accuracyCount > 0) {
-      stats.avgAccuracy = Math.round((totalAccuracy / accuracyCount) * 100) / 100;
-    }
 
     return stats;
   }

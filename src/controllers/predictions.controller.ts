@@ -3,15 +3,21 @@ import { PredictionModel } from '../models/Prediction';
 import { PoolModel } from '../models/Pool';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
-import { cyphercastClient } from '../services/solana/contract.service';
+import { contractService } from '../services/solana/contract.service';
+import { PublicKey, Keypair } from '@solana/web3.js';
 
 export class PredictionsController {
   /**
-   * Create a new prediction
+   * Place a bet (create prediction/user bet)
    */
-  static async createPrediction(req: Request, res: Response, next: NextFunction) {
+  static async placeBet(req: Request, res: Response, next: NextFunction) {
     try {
-      const { poolId, userWallet, amount } = req.body;
+      const { poolId, userWallet, deposit, requestId, bet_pubkey } = req.body;
+
+      // Validate required fields
+      if (!poolId || !userWallet || !deposit || !requestId || !bet_pubkey) {
+        throw new AppError('Missing required fields: poolId, userWallet, deposit, requestId', 400);
+      }
 
       // Validate pool exists and is active
       const pool = await PoolModel.findById(poolId);
@@ -19,48 +25,48 @@ export class PredictionsController {
         throw new AppError('Pool not found', 404);
       }
 
-      if (pool.status !== 'active') {
-        throw new AppError('Pool is not active', 400);
+      const now = Math.floor(Date.now() / 1000);
+      if (now < pool.start_time! || now > pool.end_time!) {
+        throw new AppError('Pool is not in active period', 400);
       }
 
-      if (new Date(pool.end_time) <= new Date()) {
-        throw new AppError('Pool has expired', 400);
-      }
-
-      // Create prediction in database
-      const prediction = await PredictionModel.create({
-        pool_id: poolId,
+      // Create bet in database
+      const bet = await PredictionModel.create({
         user_wallet: userWallet,
-        amount,
+        pool_pubkey: pool.pool_pubkey!,
+        pool_id: poolId,
+        deposit,
+        end_timestamp: 0,
+        bet_pubkey: ''
       });
 
-      return successResponse(res, 'Prediction placed successfully', prediction, 201);
+      return successResponse(res, 'Bet placed successfully', bet, 201);
     } catch (error) {
       next(error);
     }
   }
 
   /**
-   * Get user predictions
+   * Get user bets/predictions
    */
-  static async getUserPredictions(req: Request, res: Response, next: NextFunction) {
+  static async getUserBets(req: Request, res: Response, next: NextFunction) {
     try {
       const { userWallet } = req.params;
 
-      // Get predictions
-      const predictions = await PredictionModel.findByUser(userWallet);
+      // Get bets
+      const bets = await PredictionModel.findByUser(userWallet);
 
       // Get stats
       const stats = await PredictionModel.getUserStats(userWallet);
 
-      return successResponse(res, 'Predictions retrieved successfully', {
+      return successResponse(res, 'User bets retrieved successfully', {
         stats: {
-          activePredictions: stats.activePredictions,
+          activeBets: stats.activeBets,
           totalStaked: stats.totalStaked,
           totalRewards: stats.totalRewards,
-          avgAccuracy: stats.avgAccuracy,
+          totalClaimed: stats.totalClaimed,
         },
-        predictions: predictions,
+        bets: bets,
       });
     } catch (error) {
       next(error);
@@ -68,42 +74,83 @@ export class PredictionsController {
   }
 
   /**
-   * Claim reward
+   * Get bets for a specific pool
+   */
+  static async getPoolBets(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { poolId } = req.params;
+
+      const bets = await PredictionModel.findByPool(parseInt(poolId));
+
+      return successResponse(res, 'Pool bets retrieved successfully', bets);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Claim reward for a bet
    */
   static async claimReward(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const { userWallet } = req.body;
+      const { userWallet, reward } = req.body;
 
-      const prediction = await PredictionModel.findById(id);
-      if (!prediction) {
-        throw new AppError('Prediction not found', 404);
+      const bet = await PredictionModel.findById(id);
+      if (!bet) {
+        throw new AppError('Bet not found', 404);
       }
 
-      if (prediction.user_wallet !== userWallet) {
+      if (bet.user_wallet !== userWallet) {
         throw new AppError('Unauthorized', 403);
       }
 
-      if (prediction.status === 'claimed') {
+      if (bet.status === 'claimed') {
         throw new AppError('Reward already claimed', 400);
       }
 
-      // if (prediction.status !== 'won') {
-      //   throw new AppError('Prediction did not win', 400);
-      // }
-
-
-      const pool = await PoolModel.findById(prediction.pool_id);
-      if (!pool) {
-        throw new AppError('Pool not found', 404);
+      if (bet.status !== 'calculated') {
+        throw new AppError('Bet must be calculated before claiming reward', 400);
       }
 
-      // Update prediction status
-      const updatedPrediction = await PredictionModel.update(id, {
-        status: 'claimed',
+      // Update bet with reward and mark as claimed
+      const updatedBet = await PredictionModel.claimReward(id, reward || 0);
+
+      return successResponse(res, 'Reward claimed successfully', updatedBet);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Update bet prediction (before delegate to TEE)
+   */
+  static async updateBetPrediction(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const { prediction } = req.body;
+
+      if (prediction === undefined) {
+        throw new AppError('Prediction value is required', 400);
+      }
+
+      const bet = await PredictionModel.findById(id);
+      if (!bet) {
+        throw new AppError('Bet not found', 404);
+      }
+
+      if (bet.status !== 'initialized') {
+        throw new AppError('Can only update prediction for initialized bets', 400);
+      }
+
+      // Update status to active and store prediction
+      const updatedBet = await PredictionModel.updateWithCalculation(id, {
+        calculatedWeight: "0",
+        isWeightAdded: true,
+        status: "active",
       });
 
-      return successResponse(res, 'Reward claimed successfully', updatedPrediction);
+      return successResponse(res, 'Bet prediction updated successfully', updatedBet);
     } catch (error) {
       next(error);
     }
