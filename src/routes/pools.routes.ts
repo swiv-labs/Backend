@@ -9,7 +9,7 @@ router.get('/', asyncHandler(PoolsController.getAllPools));
 router.get('/:id', asyncHandler(PoolsController.getPoolById));
 router.post(
   '/create',
-  validateRequest(createPoolSchema),
+  // validateRequest(createPoolSchema),
   asyncHandler(PoolsController.createPool)
 );
 // router.post(

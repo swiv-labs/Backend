@@ -41,10 +41,9 @@ export class PredictionModel {
     bet_pubkey: string;
   }): Promise<UserBet> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .insert([{
         ...betData,
-        prediction: 0,
         calculated_weight: '0',
         is_weight_added: false,
         status: 'initialized',
@@ -63,7 +62,7 @@ export class PredictionModel {
    */
   static async findById(id: string): Promise<UserBet | null> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .select('*')
       .eq('id', id)
       .single();
@@ -77,7 +76,7 @@ export class PredictionModel {
    */
   static async findByPubkey(betPubkey: string): Promise<UserBet | null> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .select('*')
       .eq('bet_pubkey', betPubkey)
       .single();
@@ -91,7 +90,7 @@ export class PredictionModel {
    */
   static async findByUser(userWallet: string): Promise<UserBet[]> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .select('*')
       .eq('user_wallet', userWallet)
       .order('created_at', { ascending: false });
@@ -105,7 +104,7 @@ export class PredictionModel {
    */
   static async findByPool(poolId: number): Promise<UserBet[]> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .select('*')
       .eq('pool_id', poolId);
 
@@ -118,7 +117,7 @@ export class PredictionModel {
    */
   static async findActiveByUser(userWallet: string): Promise<UserBet[]> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .select('*')
       .eq('user_wallet', userWallet)
       .in('status', ['active', 'calculated'])
@@ -133,7 +132,7 @@ export class PredictionModel {
    */
   static async updateStatus(id: string, status: BetStatus): Promise<UserBet> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .update({ status, last_synced_at: new Date().toISOString() })
       .eq('id', id)
       .select()
@@ -156,7 +155,7 @@ export class PredictionModel {
     status: BetStatus;
   }): Promise<UserBet> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .update({
         calculated_weight: calculatedWeight,
         is_weight_added: isWeightAdded,
@@ -176,7 +175,7 @@ export class PredictionModel {
    */
   static async claimReward(id: string, reward: number): Promise<UserBet> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .update({
         status: 'claimed',
         reward,
@@ -195,7 +194,7 @@ export class PredictionModel {
    */
   static async syncFromChain(id: string, chainData: any): Promise<UserBet> {
     const { data, error } = await supabase
-      .from('user_bets')
+      .from('predictions')
       .update({
         prediction: chainData.prediction.toNumber(),
         calculated_weight: chainData.calculatedWeight.toString(),
