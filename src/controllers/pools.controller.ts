@@ -7,13 +7,10 @@ import { AppError } from '../utils/errorHandler';
 import { PublicKey } from '@solana/web3.js';
 import { env } from '../config/env';
 
-// Default token mint (should be configured in .env)
 const DEFAULT_TOKEN_MINT = new PublicKey(env.TOKEN_MINT!);
 
 export class PoolsController {
-  /**
-   * Get all pools
-   */
+
   static async getAllPools(req: Request, res: Response, next: NextFunction) {
     try {
       const { status } = req.query;
@@ -24,9 +21,6 @@ export class PoolsController {
     }
   }
 
-  /**
-   * Get pool by ID
-   */
   static async getPoolById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
@@ -56,9 +50,7 @@ export class PoolsController {
     }
   }
 
-  /**
-   * Create a new pool (creates on-chain and in database)
-   */
+
   static async createPool(req: Request, res: Response, next: NextFunction) {
     try {
       const {

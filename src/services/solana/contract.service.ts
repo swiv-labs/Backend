@@ -7,26 +7,21 @@ import {
 import { getProvider, programId, loadKeypair } from '../../config/solanaClient';
 import * as nacl from 'tweetnacl';
 
-// SwivPrivacy IDL
 import type { SwivPrivacy } from './idl/swiv_privacy';
 import IDL from './idl/swiv_privacy.json';
 
-// MagicBlock TEE Configuration
 const TEE_URL = process.env.MAGICBLOCK_TEE_URL || "https://tee.magicblock.app";
 const TEE_WS_URL = process.env.MAGICBLOCK_TEE_WS_URL || "wss://tee.magicblock.app";
 
-// Seed constants - MUST match contract constants.rs
-const SEED_PROTOCOL = Buffer.from('global_config_v1'); // Seed bytes unchanged for backward compatibility
+const SEED_PROTOCOL = Buffer.from('protocol_v2'); 
 const SEED_POOL = Buffer.from('pool');
 const SEED_BET = Buffer.from('bet');
 const SEED_POOL_VAULT = Buffer.from('pool_vault');
 
-// Sleep utility
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Auth token helper with retry logic
 async function getAuthTokenWithRetry(
   endpoint: string,
   pubkey: PublicKey,
@@ -75,10 +70,6 @@ export class ContractService {
     this.teeWsEndpoint = TEE_WS_URL;
   }
 
-  /**
-   * Get protocol PDA (replaces globalConfig)
-   * Seeds: [SEED_PROTOCOL]
-   */
   private getProtocolPDA(): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
       [SEED_PROTOCOL],
@@ -86,10 +77,7 @@ export class ContractService {
     );
   }
 
-  /**
-   * Derive pool PDA using admin and pool_id
-   * Seeds: [SEED_POOL, admin, pool_id as LE u64]
-   */
+ 
   private getPoolPDA(admin: PublicKey, poolId: number): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
       [
@@ -101,10 +89,6 @@ export class ContractService {
     );
   }
 
-  /**
-   * Derive pool vault PDA
-   * Seeds: [SEED_POOL_VAULT, pool]
-   */
   private getPoolVaultPDA(poolPubkey: PublicKey): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
       [SEED_POOL_VAULT, poolPubkey.toBuffer()],
@@ -112,10 +96,7 @@ export class ContractService {
     );
   }
 
-  /**
-   * Derive bet PDA
-   * Seeds: [SEED_BET, pool, user, bump]
-   */
+
   private getBetPDA(
     poolPubkey: PublicKey, 
     userPubkey: PublicKey,
@@ -130,9 +111,7 @@ export class ContractService {
     );
   }
 
-  /**
-   * Initialize the protocol (one-time setup)
-   */
+
   async initializeProtocol(params: {
     protocolFeeBps?: number;
     treasuryWallet?: PublicKey;

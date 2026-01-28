@@ -12,11 +12,11 @@ router.post(
   validateRequest(createPoolSchema),
   asyncHandler(PoolsController.createPool)
 );
-router.post(
-  '/:id/close',
-  validateRequest(finalizePoolSchema),
-  asyncHandler(PoolsController.closePool)
-);
+// router.post(
+//   '/:id/close',
+//   validateRequest(finalizePoolSchema),
+//   asyncHandler(PoolsController.closePool)
+// );
 router.post(
   '/:id/finalize',
   asyncHandler(PoolsController.finalizePool)
