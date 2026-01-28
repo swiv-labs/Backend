@@ -60,12 +60,23 @@ export class PoolsController {
         endTime,
         maxAccuracyBuffer,
         convictionBonusBps,
+        minPrediction,
+        maxPrediction,
         creator,
       } = req.body;
 
       // Validate required fields
       if (!name || !startTime || !endTime) {
         throw new AppError('Missing required fields: name, startTime, endTime', 400);
+      }
+
+      // Validate prediction range fields
+      if (minPrediction === undefined || maxPrediction === undefined) {
+        throw new AppError('Missing required fields: minPrediction, maxPrediction', 400);
+      }
+
+      if (minPrediction >= maxPrediction) {
+        throw new AppError('minPrediction must be less than maxPrediction', 400);
       }
 
       const startTimestamp = Math.floor(new Date(startTime).getTime() / 1000);
@@ -118,6 +129,8 @@ export class PoolsController {
         vault_balance: 0,
         max_accuracy_buffer: maxAccuracyBuf,
         conviction_bonus_bps: convictionBonus,
+        min_prediction: minPrediction,
+        max_prediction: maxPrediction,
         metadata: metadata || null,
         pool_pubkey: blockchainResult.poolPubkey,
         vault_pubkey: blockchainResult.vaultPubkey,

@@ -7,13 +7,13 @@ const router = Router();
 
 router.post(
   '/',
-  validateRequest(createPredictionSchema),
-  asyncHandler(PredictionsController.createPrediction)
+  // validateRequest(createPredictionSchema),
+  asyncHandler(PredictionsController.placeBet)
 );
 
 router.get(
   '/:userWallet',
-  asyncHandler(PredictionsController.getUserPredictions)
+  asyncHandler(PredictionsController.getUserBets)
 );
 
 router.post(

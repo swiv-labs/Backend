@@ -15,6 +15,8 @@ export interface Pool {
   conviction_bonus_bps: number;
   metadata?: string;
   resolution_target: number;
+  min_prediction: number;
+  max_prediction: number;
   is_resolved: boolean;
   resolution_ts: number;
   total_weight: string;
@@ -41,6 +43,8 @@ export class PoolModel {
     vault_balance: number;
     max_accuracy_buffer: number;
     conviction_bonus_bps: number;
+    min_prediction: number;
+    max_prediction: number;
     metadata?: string;
     pool_pubkey: string;
     vault_pubkey: string;

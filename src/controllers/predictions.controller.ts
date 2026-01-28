@@ -9,14 +9,19 @@ import { PublicKey, Keypair } from '@solana/web3.js';
 export class PredictionsController {
   /**
    * Place a bet (create prediction/user bet)
+   * Called after frontend has:
+   * 1. Initialized bet on-chain (init_bet instruction)
+   * 2. Delegated prediction to TEE (place_bet instruction via MagicBlock)
+   * 
+   * This endpoint saves the metadata to database
    */
   static async placeBet(req: Request, res: Response, next: NextFunction) {
     try {
-      const { poolId, userWallet, deposit, requestId, bet_pubkey } = req.body;
+      const { poolId, userWallet, deposit, prediction, requestId, bet_pubkey } = req.body;
 
-      // Validate required fields
-      if (!poolId || !userWallet || !deposit || !requestId || !bet_pubkey) {
-        throw new AppError('Missing required fields: poolId, userWallet, deposit, requestId', 400);
+      // Validate required fields (bet_pubkey now optional - can come from on-chain)
+      if (!poolId || !userWallet || !deposit) {
+        throw new AppError('Missing required fields: poolId, userWallet, deposit', 400);
       }
 
       // Validate pool exists and is active
@@ -36,8 +41,10 @@ export class PredictionsController {
         pool_pubkey: pool.pool_pubkey!,
         pool_id: poolId,
         deposit,
-        end_timestamp: 0,
-        bet_pubkey: ''
+        prediction: prediction || 0, // Can be encrypted on TEE side
+        end_timestamp: pool.end_time,
+        bet_pubkey: bet_pubkey || '', // Can be populated later from on-chain sync
+        status: 'initialized' // Matches BetStatus enum
       });
 
       return successResponse(res, 'Bet placed successfully', bet, 201);
