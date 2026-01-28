@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PoolModel } from '../models/Pool';
-import { cyphercastClient } from '../services/solana/cyphercastClient';
+import { cyphercastClient } from '../services/solana/contract.service';
 import { PoolFinalizationService } from '../services/solana/poolFinalization.service';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';

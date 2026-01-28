@@ -19,9 +19,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check
+app.get('/', (req: Request, res: Response) => {
+  successResponse(res, 'Swiv API is up and running', {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV,
+  });
+});
+
 app.get('/health', (req: Request, res: Response) => {
-  successResponse(res, 'CypherCast API is running', {
+  successResponse(res, 'Swiv API is up and running', {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     environment: env.NODE_ENV,

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { cyphercastClient } from '../services/solana/cyphercastClient';
+import { cyphercastClient } from '../services/solana/contract.service';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
 

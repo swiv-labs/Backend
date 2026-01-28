@@ -2,7 +2,7 @@ import { PoolModel } from '../../models/Pool';
 import { PredictionModel } from '../../models/Prediction';
 import { LeaderboardModel } from '../../models/Leaderboard';
 import { OracleService } from '../oracle.service';
-import { cyphercastClient } from './cyphercastClient';
+import { cyphercastClient } from './contract.service';
 
 export class PoolFinalizationService {
   /**

@@ -3,7 +3,7 @@ import { PredictionModel } from '../models/Prediction';
 import { PoolModel } from '../models/Pool';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
-import { cyphercastClient } from '../services/solana/cyphercastClient';
+import { cyphercastClient } from '../services/solana/contract.service';
 
 export class PredictionsController {
   /**
