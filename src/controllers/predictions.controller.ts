@@ -39,7 +39,7 @@ export class PredictionsController {
       const bet = await PredictionModel.create({
         user_wallet: userWallet,
         pool_pubkey: pool.pool_pubkey!,
-        pool_id: poolId,
+        pool_id: pool.pool_id!,
         deposit,
         prediction: prediction || 0, // Can be encrypted on TEE side
         end_timestamp: pool.end_time,

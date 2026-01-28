@@ -35,6 +35,7 @@ export class PredictionModel {
   static async create(betData: {
     user_wallet: string;
     pool_pubkey: string;
+    requestId: string;
     pool_id: number;
     deposit: number;
     end_timestamp: number;
