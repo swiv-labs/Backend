@@ -62,7 +62,7 @@ export class PredictionsController {
       const { userWallet } = req.params;
 
       // Get bets
-      const bets = await PredictionModel.findByUser(userWallet);
+      const predictions = await PredictionModel.findByUser(userWallet);
 
       // Get stats
       const stats = await PredictionModel.getUserStats(userWallet);
@@ -74,7 +74,7 @@ export class PredictionsController {
           totalRewards: stats.totalRewards,
           totalClaimed: stats.totalClaimed,
         },
-        bets: bets,
+        predictions: predictions,
       });
     } catch (error) {
       next(error);
