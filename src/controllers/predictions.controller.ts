@@ -69,7 +69,7 @@ export class PredictionsController {
 
       return successResponse(res, 'User bets retrieved successfully', {
         stats: {
-          activeBets: stats.activeBets,
+          activePredictions: stats.activePredictions,
           totalStaked: stats.totalStaked,
           totalRewards: stats.totalRewards,
           totalClaimed: stats.totalClaimed,

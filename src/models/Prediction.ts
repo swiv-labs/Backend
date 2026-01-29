@@ -22,7 +22,7 @@ export interface UserBet {
 }
 
 export interface UserPredictionStats {
-  activeBets: number;
+  activePredictions: number;
   totalStaked: number;
   totalRewards: number;
   totalClaimed: number;
@@ -219,7 +219,7 @@ export class PredictionModel {
     const bets = await this.findByUser(userWallet);
 
     const stats: UserPredictionStats = {
-      activeBets: 0,
+      activePredictions: 0,
       totalStaked: 0,
       totalRewards: 0,
       totalClaimed: 0,
@@ -232,7 +232,7 @@ export class PredictionModel {
     bets.forEach((bet) => {
       // Active bets
       if (bet.status === 'active' || bet.status === 'calculated') {
-        stats.activeBets++;
+        stats.activePredictions++;
       }
 
       // Total staked
