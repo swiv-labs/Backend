@@ -40,11 +40,12 @@ export class PredictionsController {
         user_wallet: userWallet,
         pool_pubkey: pool.pool_pubkey!,
         pool_id: pool.pool_id!,
+        request_id: requestId,
         deposit,
-        prediction: prediction || 0, // Can be encrypted on TEE side
+        // prediction: prediction || 0, // Can be encrypted on TEE side
         end_timestamp: pool.end_time,
         bet_pubkey: bet_pubkey || '', // Can be populated later from on-chain sync
-        status: 'initialized' // Matches BetStatus enum
+        // status: 'initialized' // Matches BetStatus enum
       });
 
       return successResponse(res, 'Bet placed successfully', bet, 201);
