@@ -3,29 +3,17 @@ import { PredictionModel } from '../models/Prediction';
 import { PoolModel } from '../models/Pool';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
-import { contractService } from '../services/solana/contract.service';
-import { PublicKey, Keypair } from '@solana/web3.js';
 
 export class PredictionsController {
-  /**
-   * Place a bet (create prediction/user bet)
-   * Called after frontend has:
-   * 1. Initialized bet on-chain (init_bet instruction)
-   * 2. Delegated prediction to TEE (place_bet instruction via MagicBlock)
-   * 
-   * This endpoint saves the metadata to database
-   */
   static async placeBet(req: Request, res: Response, next: NextFunction) {
     try {
-      const { poolId, userWallet, deposit, prediction, requestId, bet_pubkey } = req.body;
+      const { poolId, userWallet, deposit, requestId, bet_pubkey } = req.body;
 
-      // Validate required fields (bet_pubkey now optional - can come from on-chain)
       if (!poolId || !userWallet || !deposit) {
         throw new AppError('Missing required fields: poolId, userWallet, deposit', 400);
       }
 
-      // Validate pool exists and is active
-      const pool = await PoolModel.findById(poolId);
+      const pool = await PoolModel.findByPoolId(poolId);
       if (!pool) {
         throw new AppError('Pool not found', 404);
       }
@@ -35,17 +23,14 @@ export class PredictionsController {
         throw new AppError('Pool is not in active period', 400);
       }
 
-      // Create bet in database
       const bet = await PredictionModel.create({
         user_wallet: userWallet,
         pool_pubkey: pool.pool_pubkey!,
         pool_id: pool.pool_id!,
         request_id: requestId,
         deposit,
-        // prediction: prediction || 0, // Can be encrypted on TEE side
         end_timestamp: pool.end_time,
-        bet_pubkey: bet_pubkey || '', // Can be populated later from on-chain sync
-        // status: 'initialized' // Matches BetStatus enum
+        bet_pubkey: bet_pubkey || '',
       });
 
       return successResponse(res, 'Bet placed successfully', bet, 201);
