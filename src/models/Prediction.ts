@@ -92,7 +92,7 @@ export class PredictionModel {
   static async findByUser(userWallet: string): Promise<UserBet[]> {
     const { data, error } = await supabase
       .from('predictions')
-      .select('*')
+      .select('*, pools(*)')
       .eq('user_wallet', userWallet)
       .order('created_at', { ascending: false });
 
