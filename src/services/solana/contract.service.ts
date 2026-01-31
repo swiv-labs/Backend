@@ -1,7 +1,7 @@
 import { Program, AnchorProvider, BN, web3, Wallet } from '@coral-xyz/anchor';
 import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, Keypair, ComputeBudgetProgram, Connection } from '@solana/web3.js';
-import { 
-  TOKEN_PROGRAM_ID, 
+import {
+  TOKEN_PROGRAM_ID,
   getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token';
 import { getProvider, programId, loadKeypair } from '../../config/solanaClient';
@@ -12,8 +12,9 @@ import IDL from './idl/swiv_privacy.json';
 
 const TEE_URL = process.env.MAGICBLOCK_TEE_URL || "https://tee.magicblock.app";
 const TEE_WS_URL = process.env.MAGICBLOCK_TEE_WS_URL || "wss://tee.magicblock.app";
+const TEE_VALIDATOR = new PublicKey("FnE6VJT5QNZdedZPnCoLsARgBwoE6DeJNjBs2H1gySXA");
 
-const SEED_PROTOCOL = Buffer.from('protocol_v2'); 
+const SEED_PROTOCOL = Buffer.from('protocol_v2');
 const SEED_POOL = Buffer.from('pool');
 const SEED_BET = Buffer.from('bet');
 const SEED_POOL_VAULT = Buffer.from('pool_vault');
@@ -32,7 +33,7 @@ async function getAuthTokenWithRetry(
     try {
       const message = new TextEncoder().encode(`auth:${pubkey.toBase58()}:${Date.now()}`);
       const signature = await signer(message);
-      
+
       const response = await fetch(`${endpoint}/auth`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,7 +42,7 @@ async function getAuthTokenWithRetry(
           signature: Buffer.from(signature).toString('base64'),
         }),
       });
-      
+
       if (!response.ok) throw new Error('Auth failed');
       const data = (await response.json()) as { token: string };
       return { token: data.token };
@@ -77,7 +78,7 @@ export class ContractService {
     );
   }
 
- 
+
   private getPoolPDA(admin: PublicKey, poolId: number): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
       [
@@ -98,7 +99,7 @@ export class ContractService {
 
 
   private getBetPDA(
-    poolPubkey: PublicKey, 
+    poolPubkey: PublicKey,
     userPubkey: PublicKey,
   ): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
@@ -118,7 +119,7 @@ export class ContractService {
   } = {}): Promise<string> {
     try {
       const protocolFeeBps = params.protocolFeeBps || 300;
-      
+
       const [protocol] = this.getProtocolPDA();
 
       const tx = await this.program.methods
@@ -182,10 +183,10 @@ export class ContractService {
     maxAccuracyBuffer: number;
     convictionBonusBps: number;
     metadata?: string;
-  }): Promise<{ 
+  }): Promise<{
     signature: string;
-    poolId?: number; 
-    poolPubkey: string; 
+    poolId?: number;
+    poolPubkey: string;
     vaultPubkey: string;
   }> {
     try {
@@ -346,9 +347,9 @@ export class ContractService {
       // Connect to TEE
       const teeConnection = new Connection(
         `${this.teeEndpoint}${tokenString}`,
-        { 
-          commitment: 'confirmed', 
-          wsEndpoint: this.teeWsEndpoint 
+        {
+          commitment: 'confirmed',
+          wsEndpoint: this.teeWsEndpoint
         }
       );
 
@@ -378,15 +379,17 @@ export class ContractService {
     }
   }
 
-  /**
-   * Delegate pool to TEE for resolution
-   */
   async delegatePool(params: {
     poolId: number;
   }): Promise<string> {
     try {
+      console.log('Delegating pool to TEE...', this.authority.publicKey.toBase58(), params.poolId);
       const [protocol] = this.getProtocolPDA();
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
+
+      const poolAcc = await this.provider.connection.getAccountInfo(pool);
+      console.log(poolAcc?.owner.toBase58());
+
 
       const tx = await this.program.methods
         .delegatePool(new BN(params.poolId))
@@ -394,8 +397,8 @@ export class ContractService {
           admin: this.authority.publicKey,
           protocol,
           pool,
+          validator: TEE_VALIDATOR,
         })
-        .signers([this.authority])
         .rpc();
 
       console.log('Pool delegated to TEE:', tx);
@@ -406,9 +409,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Resolve pool with actual price (on TEE)
-   */
   async resolvePool(params: {
     poolId: number;
     finalOutcome: number;
@@ -417,12 +417,11 @@ export class ContractService {
       const [protocol] = this.getProtocolPDA();
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
 
-      // Connect to TEE
       const teeConnection = new Connection(
         this.teeEndpoint,
-        { 
-          commitment: 'confirmed', 
-          wsEndpoint: this.teeWsEndpoint 
+        {
+          commitment: 'confirmed',
+          wsEndpoint: this.teeWsEndpoint
         }
       );
 
@@ -451,10 +450,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Batch calculate weights (on TEE)
-   * Decrypts all predictions and calculates weights based on accuracy
-   */
   async batchCalculateWeights(params: {
     poolId: number;
     betPubkeys: PublicKey[];
@@ -465,9 +460,9 @@ export class ContractService {
       // Connect to TEE
       const teeConnection = new Connection(
         this.teeEndpoint,
-        { 
-          commitment: 'confirmed', 
-          wsEndpoint: this.teeWsEndpoint 
+        {
+          commitment: 'confirmed',
+          wsEndpoint: this.teeWsEndpoint
         }
       );
 
@@ -486,9 +481,9 @@ export class ContractService {
 
       const tx = await teeProgram.methods
         .batchCalculateWeights()
-        .accountsPartial({ 
-          admin: this.authority.publicKey, 
-          pool 
+        .accountsPartial({
+          admin: this.authority.publicKey,
+          pool
         })
         .remainingAccounts(batchAccounts)
         .preInstructions([
@@ -505,9 +500,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Batch undelegate bets (return to L1)
-   */
   async batchUndelegateBets(params: {
     poolId: number;
     betPubkeys: PublicKey[];
@@ -517,9 +509,9 @@ export class ContractService {
 
       const teeConnection = new Connection(
         this.teeEndpoint,
-        { 
-          commitment: 'confirmed', 
-          wsEndpoint: this.teeWsEndpoint 
+        {
+          commitment: 'confirmed',
+          wsEndpoint: this.teeWsEndpoint
         }
       );
 
@@ -538,9 +530,9 @@ export class ContractService {
 
       const tx = await teeProgram.methods
         .batchUndelegateBets()
-        .accounts({ 
-          payer: this.authority.publicKey, 
-          pool 
+        .accounts({
+          payer: this.authority.publicKey,
+          pool
         })
         .remainingAccounts(batchAccounts)
         .signers([this.authority])
@@ -554,9 +546,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Undelegate pool (return to L1)
-   */
   async undelegatePool(params: {
     poolId: number;
   }): Promise<string> {
@@ -566,9 +555,9 @@ export class ContractService {
 
       const teeConnection = new Connection(
         this.teeEndpoint,
-        { 
-          commitment: 'confirmed', 
-          wsEndpoint: this.teeWsEndpoint 
+        {
+          commitment: 'confirmed',
+          wsEndpoint: this.teeWsEndpoint
         }
       );
 
@@ -597,10 +586,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Finalize weights and distribute fees (on L1)
-   * Called after all bets are undelegated
-   */
   async finalizeWeights(params: {
     poolId: number;
     tokenMint: PublicKey;
@@ -612,7 +597,7 @@ export class ContractService {
 
       // Get protocol to retrieve treasury wallet
       const protocolData = await this.program.account.protocol.fetch(protocol);
-      
+
       // Get treasury token account
       const treasuryAta = await getOrCreateAssociatedTokenAccount(
         this.provider.connection,
@@ -643,9 +628,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Claim reward for a user
-   */
   async claimReward(params: {
     poolId: number;
     userKeypair: Keypair;
@@ -677,9 +659,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Fetch protocol state
-   */
   async getProtocol(): Promise<any> {
     try {
       const [protocol] = this.getProtocolPDA();
@@ -742,7 +721,7 @@ export class ContractService {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
       const [bet] = this.getBetPDA(pool, params.userPubkey);
-      
+
       const betData = await this.program.account.userBet.fetch(bet);
 
       return {
@@ -813,9 +792,6 @@ export class ContractService {
     };
   }
 
-  /**
-   * Complete pool resolution flow (delegate, resolve, calculate, undelegate, finalize)
-   */
   async completePoolResolution(params: {
     poolId: number;
     finalOutcome: number;
@@ -831,7 +807,6 @@ export class ContractService {
   }> {
     console.log('Starting complete pool resolution flow...');
 
-    // Step 1: Delegate pool to TEE
     const delegatePoolSignature = await this.delegatePool({
       poolId: params.poolId,
     });
@@ -876,7 +851,21 @@ export class ContractService {
       finalizeSignature,
     };
   }
+
+  /**
+   * Getter methods for external use
+   */
+  getProgram(): Program<SwivPrivacy> {
+    return this.program;
+  }
+
+  getConnection(): Connection {
+    return this.provider.connection;
+  }
+
+  getAdminKeypair(): Keypair {
+    return this.authority;
+  }
 }
 
 export const contractService = new ContractService();
- 

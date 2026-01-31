@@ -18,8 +18,8 @@ router.post(
 //   asyncHandler(PoolsController.closePool)
 // );
 router.post(
-  '/:id/finalize',
-  asyncHandler(PoolsController.finalizePool)
+  '/:id/resolve',
+  asyncHandler(PoolsController.resolvePool)
 );
 
 export default router;

@@ -101,6 +101,13 @@ export class PredictionModel {
   }
 
   /**
+   * Find all bets in a pool (alias for findByPool)
+   */
+  static async findByPoolId(poolId: number): Promise<UserBet[]> {
+    return this.findByPool(poolId);
+  }
+
+  /**
    * Find all bets in a pool
    */
   static async findByPool(poolId: number): Promise<UserBet[]> {
@@ -126,6 +133,13 @@ export class PredictionModel {
 
     if (error) throw error;
     return data || [];
+  }
+
+  /**
+   * Update bet status (alias for updateStatus)
+   */
+  static async updateBetStatus(id: string, status: BetStatus): Promise<UserBet> {
+    return this.updateStatus(id, status);
   }
 
   /**
