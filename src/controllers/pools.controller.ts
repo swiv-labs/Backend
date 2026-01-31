@@ -236,7 +236,6 @@ export class PoolsController {
 
         console.log('Finalize tx signature:', finalizeSig);
 
-        // Fetch on-chain pool to persist authoritative state
         const onChainPool = await contractService.getPool(poolId);
         if (!onChainPool) {
           throw new Error('Failed to fetch on-chain pool after finalize');

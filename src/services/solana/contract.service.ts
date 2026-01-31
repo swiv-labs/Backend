@@ -597,10 +597,11 @@ export class ContractService {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
       const [poolVault] = this.getPoolVaultPDA(pool);
 
-      // Get protocol to retrieve treasury wallet
       const protocolData = await this.program.account.protocol.fetch(protocol);
+      const poolAccount = await this.program.account.pool.fetch(pool);
 
-      // Get treasury token account
+      console.log("🔍 Pool State:", poolAccount);
+
       const treasuryAta = await getOrCreateAssociatedTokenAccount(
         this.provider.connection,
         this.authority,
