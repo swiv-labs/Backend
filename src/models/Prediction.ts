@@ -193,6 +193,7 @@ export class PredictionModel {
   static async claimReward(id: string, reward: number, claimTx?: string): Promise<UserBet> {
     const payload: any = {
       status: 'claimed',
+      claimed: true,
       reward,
       last_synced_at: new Date().toISOString(),
     };

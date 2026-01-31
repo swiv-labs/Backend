@@ -50,6 +50,8 @@ export const createPredictionSchema = Joi.object({
 
 export const claimRewardSchema = Joi.object({
   userWallet: Joi.string().required(),
+  claimTxSignature: Joi.string().required(),
+  rewardAmount: Joi.number().required(),
 });
 
 export const finalizePoolSchema = Joi.object({
