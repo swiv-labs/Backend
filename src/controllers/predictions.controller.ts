@@ -3,6 +3,7 @@ import { PredictionModel } from '../models/Prediction';
 import { PoolModel } from '../models/Pool';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
+import { PublicKey } from '@solana/web3.js';
 
 export class PredictionsController {
   static async placeBet(req: Request, res: Response, next: NextFunction) {
@@ -83,11 +84,17 @@ export class PredictionsController {
 
   /**
    * Claim reward for a bet
+   * Backend only: Accept confirmed tx signature and reward amount from frontend
+   * Verify user authorization and persist claim record to database
    */
   static async claimReward(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const { userWallet, reward } = req.body;
+      const { userWallet, claimTxSignature, rewardAmount } = req.body;
+
+      if (!userWallet || !claimTxSignature) {
+        throw new AppError('userWallet and claimTxSignature are required', 400);
+      }
 
       const bet = await PredictionModel.findById(id);
       if (!bet) {
@@ -106,8 +113,12 @@ export class PredictionsController {
         throw new AppError('Bet must be calculated before claiming reward', 400);
       }
 
-      // Update bet with reward and mark as claimed
-      const updatedBet = await PredictionModel.claimReward(id, reward || 0);
+      // Persist claim in DB with tx signature and reward amount from frontend
+      const updatedBet = await PredictionModel.claimReward(
+        id,
+        rewardAmount || 0,
+        claimTxSignature
+      );
 
       return successResponse(res, 'Reward claimed successfully', updatedBet);
     } catch (error) {

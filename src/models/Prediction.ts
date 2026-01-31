@@ -17,6 +17,8 @@ export interface UserBet {
   end_timestamp: number;
   bet_pubkey: string;
   reward?: number;
+  claim_tx?: string;
+  claimed_at?: string;
   created_at: string;
   last_synced_at: string;
 }
@@ -188,14 +190,21 @@ export class PredictionModel {
   /**
    * Claim reward
    */
-  static async claimReward(id: string, reward: number): Promise<UserBet> {
+  static async claimReward(id: string, reward: number, claimTx?: string): Promise<UserBet> {
+    const payload: any = {
+      status: 'claimed',
+      reward,
+      last_synced_at: new Date().toISOString(),
+    };
+
+    if (claimTx) {
+      payload.claim_tx = claimTx;
+      payload.claimed_at = new Date().toISOString();
+    }
+
     const { data, error } = await supabase
       .from('predictions')
-      .update({
-        status: 'claimed',
-        reward,
-        last_synced_at: new Date().toISOString(),
-      })
+      .update(payload)
       .eq('id', id)
       .select()
       .single();

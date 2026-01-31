@@ -143,8 +143,25 @@ export class PoolModel {
   }
 
   /**
-   * Sync pool state from on-chain
+   * Mark pool as finalized (weights finalized, claimable)
    */
+  static async finalizePool(id: string): Promise<Pool> {
+    const { data, error } = await supabase
+      .from('pools')
+      .update({
+        weight_finalized: true,
+        status: 'settled' as PoolStatus,
+        last_synced_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+
   static async syncFromChain(id: string, chainData: any): Promise<Pool> {
     const { data, error } = await supabase
       .from('pools')

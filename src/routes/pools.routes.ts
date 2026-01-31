@@ -22,4 +22,10 @@ router.post(
   asyncHandler(PoolsController.resolvePool)
 );
 
+router.post(
+  '/:id/finalize',
+  // validateRequest(finalizePoolSchema),
+  asyncHandler(PoolsController.finalizePool)
+);
+
 export default router;

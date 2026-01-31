@@ -207,4 +207,57 @@ export class PoolsController {
       next(error);
     }
   }
+
+  static async finalizePool(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+
+      const pool = await PoolModel.findById(id);
+      if (!pool) {
+        throw new AppError('Pool not found', 404);
+      }
+
+      const poolId = pool.pool_id!;
+
+      if (!pool.is_resolved) {
+        throw new AppError('Pool must be resolved before finalizing weights', 400);
+      }
+
+      if (pool.weight_finalized) {
+        throw new AppError('Pool weights already finalized', 400);
+      }
+
+      try {
+        console.log(`Finalizing weights for pool ${poolId} on-chain...`);
+        const finalizeSig = await contractService.finalizeWeights({
+          poolId,
+          tokenMint: new PublicKey(pool.token_mint!),
+        });
+
+        console.log('Finalize tx signature:', finalizeSig);
+
+        // Fetch on-chain pool to persist authoritative state
+        const onChainPool = await contractService.getPool(poolId);
+        if (!onChainPool) {
+          throw new Error('Failed to fetch on-chain pool after finalize');
+        }
+
+        const updatedPool = await PoolModel.syncFromChain(id, onChainPool);
+        await PoolModel.updateStatus(id, 'settled');
+
+        // Mark finalized explicitly
+        await PoolModel.finalizePool(id);
+
+        return successResponse(res, 'Pool weights finalized', {
+          signature: finalizeSig,
+          pool: updatedPool,
+        });
+      } catch (error: any) {
+        console.error('Failed to finalize pool on-chain:', error);
+        throw new AppError(`Failed to finalize pool on-chain: ${error.message}`, 500);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
 }
