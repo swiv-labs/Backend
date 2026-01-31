@@ -6,7 +6,9 @@ import {
 } from '@solana/spl-token';
 import { getProvider, programId, loadKeypair } from '../../config/solanaClient';
 import * as nacl from 'tweetnacl';
-
+import {
+  getAuthToken,
+} from "@magicblock-labs/ephemeral-rollups-sdk";
 import type { SwivPrivacy } from './idl/swiv_privacy';
 import IDL from './idl/swiv_privacy.json';
 
@@ -21,38 +23,6 @@ const SEED_POOL_VAULT = Buffer.from('pool_vault');
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function getAuthTokenWithRetry(
-  endpoint: string,
-  pubkey: PublicKey,
-  signer: (msg: Uint8Array) => Promise<Uint8Array>,
-  retries = 3,
-): Promise<{ token: string }> {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const message = new TextEncoder().encode(`auth:${pubkey.toBase58()}:${Date.now()}`);
-      const signature = await signer(message);
-
-      const response = await fetch(`${endpoint}/auth`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pubkey: pubkey.toBase58(),
-          signature: Buffer.from(signature).toString('base64'),
-        }),
-      });
-
-      if (!response.ok) throw new Error('Auth failed');
-      const data = (await response.json()) as { token: string };
-      return { token: data.token };
-    } catch (e: any) {
-      if (i === retries - 1) throw e;
-      console.log(`Auth failed ("${e.message}"). Retrying (${i + 1}/${retries})...`);
-      await sleep(1000 * (i + 1));
-    }
-  }
-  throw new Error("Unreachable");
 }
 
 
@@ -333,10 +303,11 @@ export class ContractService {
       // Get auth token for TEE
       let tokenString = "";
       try {
-        const authToken = await getAuthTokenWithRetry(
+        const authToken = await getAuthToken(
           this.teeEndpoint,
-          params.userKeypair.publicKey,
-          async (message) => nacl.sign.detached(message, params.userKeypair.secretKey),
+          this.authority.publicKey,
+          (message: Uint8Array) =>
+            Promise.resolve(nacl.sign.detached(message, this.authority.secretKey))
         );
         tokenString = `?token=${authToken.token}`;
         console.log('TEE auth token generated');
@@ -417,11 +388,19 @@ export class ContractService {
       const [protocol] = this.getProtocolPDA();
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
 
-      const teeConnection = new Connection(
+      const authToken = await getAuthToken(
         this.teeEndpoint,
+        this.authority.publicKey,
+        (message: Uint8Array) =>
+          Promise.resolve(nacl.sign.detached(message, this.authority.secretKey))
+      );
+      console.log("    ✅ Admin Auth Token obtained.");
+
+      const teeConnection = new Connection(
+        `${TEE_URL}?token=${authToken.token}`,
         {
           commitment: 'confirmed',
-          wsEndpoint: this.teeWsEndpoint
+          wsEndpoint: `${TEE_WS_URL}?token=${authToken.token}`,
         }
       );
 
@@ -457,12 +436,19 @@ export class ContractService {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
 
-      // Connect to TEE
-      const teeConnection = new Connection(
+      const authToken = await getAuthToken(
         this.teeEndpoint,
+        this.authority.publicKey,
+        (message: Uint8Array) =>
+          Promise.resolve(nacl.sign.detached(message, this.authority.secretKey))
+      );
+      console.log("    ✅ Admin Auth Token obtained.");
+
+      const teeConnection = new Connection(
+        `${TEE_URL}?token=${authToken.token}`,
         {
           commitment: 'confirmed',
-          wsEndpoint: this.teeWsEndpoint
+          wsEndpoint: `${TEE_WS_URL}?token=${authToken.token}`,
         }
       );
 
@@ -507,11 +493,19 @@ export class ContractService {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
 
-      const teeConnection = new Connection(
+      const authToken = await getAuthToken(
         this.teeEndpoint,
+        this.authority.publicKey,
+        (message: Uint8Array) =>
+          Promise.resolve(nacl.sign.detached(message, this.authority.secretKey))
+      );
+      console.log("    ✅ Admin Auth Token obtained.");
+
+      const teeConnection = new Connection(
+        `${TEE_URL}?token=${authToken.token}`,
         {
           commitment: 'confirmed',
-          wsEndpoint: this.teeWsEndpoint
+          wsEndpoint: `${TEE_WS_URL}?token=${authToken.token}`,
         }
       );
 
@@ -553,11 +547,19 @@ export class ContractService {
       const [protocol] = this.getProtocolPDA();
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
 
-      const teeConnection = new Connection(
+      const authToken = await getAuthToken(
         this.teeEndpoint,
+        this.authority.publicKey,
+        (message: Uint8Array) =>
+          Promise.resolve(nacl.sign.detached(message, this.authority.secretKey))
+      );
+      console.log("    ✅ Admin Auth Token obtained.");
+
+      const teeConnection = new Connection(
+        `${TEE_URL}?token=${authToken.token}`,
         {
           commitment: 'confirmed',
-          wsEndpoint: this.teeWsEndpoint
+          wsEndpoint: `${TEE_WS_URL}?token=${authToken.token}`,
         }
       );
 
@@ -811,30 +813,25 @@ export class ContractService {
       poolId: params.poolId,
     });
 
-    // Step 2: Resolve pool on TEE
     const resolveSignature = await this.resolvePool({
       poolId: params.poolId,
       finalOutcome: params.finalOutcome,
     });
 
-    // Step 3: Calculate weights on TEE
     const calculateWeightsSignature = await this.batchCalculateWeights({
       poolId: params.poolId,
       betPubkeys: params.betPubkeys,
     });
 
-    // Step 4: Undelegate bets
     const undelegateBetsSignature = await this.batchUndelegateBets({
       poolId: params.poolId,
       betPubkeys: params.betPubkeys,
     });
 
-    // Step 5: Undelegate pool
     const undelegatePoolSignature = await this.undelegatePool({
       poolId: params.poolId,
     });
 
-    // Step 6: Finalize weights on L1
     const finalizeSignature = await this.finalizeWeights({
       poolId: params.poolId,
       tokenMint: params.tokenMint,
@@ -852,9 +849,6 @@ export class ContractService {
     };
   }
 
-  /**
-   * Getter methods for external use
-   */
   getProgram(): Program<SwivPrivacy> {
     return this.program;
   }
