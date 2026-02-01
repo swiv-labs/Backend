@@ -3,7 +3,6 @@ import { PoolModel } from '../models/Pool';
 import { PoolFinalizationService } from '../services/solana/poolFinalization.service';
 
 export const startPoolFinalizationJob = () => {
-  // Run every minute
   cron.schedule('* * * * *', async () => {
     try {
       console.log('Running pool finalization job...');
@@ -19,7 +18,7 @@ export const startPoolFinalizationJob = () => {
 
       for (const pool of expiredPools) {
         try {
-          await PoolFinalizationService.finalizePool(pool.poolid.toString());
+          await PoolFinalizationService.closePool(pool.pool_id);
         } catch (error: any) {
           console.error(`Error finalizing pool ${pool.id}:`, error.message);
         }

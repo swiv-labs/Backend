@@ -30,9 +30,6 @@ export interface Pool {
 }
 
 export class PoolModel {
-  /**
-   * Create a new pool
-   */
   static async create(poolData: {
     pool_id: number;
     admin: string;
@@ -69,9 +66,6 @@ export class PoolModel {
     return data;
   }
 
-  /**
-   * Find pool by ID
-   */
   static async findById(id: string): Promise<Pool | null> {
     const { data, error } = await supabase
       .from('pools')
@@ -83,9 +77,17 @@ export class PoolModel {
     return data || null;
   }
 
-  /**
-   * Find pool by pool_id
-   */
+  static async findExpiredPools(): Promise<Pool[]> {
+    const { data, error } = await supabase
+      .from('pools')
+      .select('*')
+      .eq('status', 'active')
+      .lt('end_time', new Date().toISOString());
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || [];
+  }
+
   static async findByPoolId(poolId: number): Promise<Pool | null> {
     const { data, error } = await supabase
       .from('pools')
@@ -97,12 +99,9 @@ export class PoolModel {
     return data || null;
   }
 
-  /**
-   * Get all pools with optional status filter
-   */
   static async findAll(status?: PoolStatus): Promise<Pool[]> {
     let query = supabase.from('pools').select('*');
-    
+
     if (status) {
       query = query.eq('status', status);
     }
@@ -113,9 +112,6 @@ export class PoolModel {
     return data || [];
   }
 
-  /**
-   * Get active pools
-   */
   static async findActive(): Promise<Pool[]> {
     const { data, error } = await supabase
       .from('pools')
@@ -127,9 +123,6 @@ export class PoolModel {
     return data || [];
   }
 
-  /**
-   * Update pool status
-   */
   static async updateStatus(id: string, status: PoolStatus): Promise<Pool> {
     const { data, error } = await supabase
       .from('pools')
@@ -142,9 +135,6 @@ export class PoolModel {
     return data;
   }
 
-  /**
-   * Mark pool as finalized (weights finalized, claimable)
-   */
   static async finalizePool(id: string): Promise<Pool> {
     const { data, error } = await supabase
       .from('pools')
@@ -182,11 +172,8 @@ export class PoolModel {
     return data;
   }
 
-  /**
-   * Update resolution details
-   */
   static async updateResolution(
-    id: string, 
+    id: string,
     target: number,
     status: PoolStatus
   ): Promise<Pool> {

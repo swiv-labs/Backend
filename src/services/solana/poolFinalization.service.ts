@@ -1,14 +1,7 @@
 import { PoolModel } from '../../models/Pool';
-import { PredictionModel } from '../../models/Prediction';
-import { LeaderboardModel } from '../../models/Leaderboard';
-import { OracleService } from '../oracle.service';
-import { cyphercastClient } from './contract.service';
 
 export class PoolFinalizationService {
-  /**
-   * Finalize a single pool
-   */
-  static async finalizePool(poolId: string): Promise<void> {
+  static async closePool(poolId: number): Promise<void> {
     try {
       const pool = await PoolModel.findByPoolId(poolId);
       if (!pool) throw new Error('Pool not found');
@@ -16,70 +9,12 @@ export class PoolFinalizationService {
 
       console.log(`Finalizing pool ${poolId}...`);
 
-      // 1. Fetch final price from oracle
-      const finalPrice = await OracleService.getCurrentPrice(pool.asset_symbol);
-      console.log(`Final price for ${pool.asset_symbol}: ${finalPrice}`);
+      await PoolModel.updateStatus(pool.id, 'closed');
 
-      // Convert price to u64 format (multiply by 100 for 2 decimal precision)
-      const actualPriceU64 = Math.floor(finalPrice * 100);
-
-      // 2. Call Solana contract to finalize
-      try {
-        const numericPoolId = parseInt(poolId);
-        const signature = await cyphercastClient.finalizePool({
-          poolId: numericPoolId,
-          actualPrice: actualPriceU64,
-        });
-        console.log(`Pool ${poolId} finalized on-chain:`, signature);
-      } catch (blockchainError: any) {
-        console.error('Blockchain finalization failed:', blockchainError.message);
-        // Continue with database update even if blockchain fails
-      }
-
-      // 3. Update pool status in database
-      await PoolModel.close(pool.id, finalPrice);
-
-      // 4. Calculate winners and update predictions
-      await this.settlePredictions(pool.id, finalPrice, pool.target_price);
-
-      console.log(`Pool ${pool.id} finalized successfully`);
+      console.log(`Pool ${pool.id} closed successfully`);
     } catch (error: any) {
       console.error(`Failed to finalize pool ${poolId}:`, error.message);
       throw error;
     }
-  }
-
-  /**
-   * Settle all predictions for a pool
-   */
-  private static async settlePredictions(
-    poolId: string,
-    finalPrice: number,
-    targetPrice: number
-  ): Promise<void> {
-    const predictions = await PredictionModel.findByPool(poolId);
-    
-    for (const prediction of predictions) {
-      const isWinner = this.checkWinner(
-        finalPrice,
-        targetPrice
-      );
-
-      const reward = 0;
-      const status = isWinner ? 'resolved' : 'resolved';
-
-      await PredictionModel.update(prediction.id, { reward, status });
-      await LeaderboardModel.incrementStats(prediction.user_wallet, isWinner, reward);
-    }
-  }
-
-  /**
-   * Determine if prediction is a winner
-   */
-  private static checkWinner(
-    finalPrice: number,
-    targetPrice: number
-  ): boolean {
-    return finalPrice < targetPrice;
   }
 }
