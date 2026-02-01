@@ -78,15 +78,18 @@ export class PoolModel {
   }
 
   static async findExpiredPools(): Promise<Pool[]> {
+    const nowUnix = Math.floor(Date.now() / 1000);
+
     const { data, error } = await supabase
       .from('pools')
       .select('*')
       .eq('status', 'active')
-      .lt('end_time', new Date().toISOString());
+      .lt('end_time', nowUnix);
 
     if (error && error.code !== 'PGRST116') throw error;
     return data || [];
   }
+
 
   static async findByPoolId(poolId: number): Promise<Pool | null> {
     const { data, error } = await supabase
