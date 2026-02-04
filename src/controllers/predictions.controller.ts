@@ -4,6 +4,7 @@ import { PoolModel } from '../models/Pool';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
 import { PublicKey } from '@solana/web3.js';
+import { ContractService } from '../services/solana/contract.service';
 
 export class PredictionsController {
   static async placeBet(req: Request, res: Response, next: NextFunction) {
@@ -22,6 +23,24 @@ export class PredictionsController {
       const now = Math.floor(Date.now() / 1000);
       if (now < pool.start_time! || now > pool.end_time!) {
         throw new AppError('Pool is not in active period', 400);
+      }
+
+      try {
+        const contractService = new ContractService();
+        const onChainPoolData = await contractService.getPool(poolId);
+
+        await PoolModel.syncFromChain(pool.id!, {
+          vaultBalance: { toNumber: () => onChainPoolData.vaultBalance },
+          isResolved: onChainPoolData.isResolved,
+          resolutionTs: { toNumber: () => onChainPoolData.resolutionTs || 0 },
+          totalWeight: onChainPoolData.totalWeight,
+          weightFinalized: onChainPoolData.weightFinalized,
+          totalParticipants: { toNumber: () => onChainPoolData.totalParticipants },
+        });
+
+        console.log(`[placeBet] Synced pool ${poolId} - Vault Balance: ${onChainPoolData.vaultBalance}, Participants: ${onChainPoolData.totalParticipants}`);
+      } catch (syncError) {
+        console.error(`[placeBet] Error syncing pool data from chain:`, syncError);
       }
 
       const bet = await PredictionModel.create({
