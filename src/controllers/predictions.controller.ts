@@ -29,9 +29,11 @@ export class PredictionsController {
         const contractService = new ContractService();
         const onChainPoolData = await contractService.getPool(poolId);
 
+        console.log(`[placeBet] On-chain pool data for poolId ${poolId}:`, onChainPoolData);
+
         await PoolModel.syncFromChain(pool.id!, {
-          vaultBalance: { toNumber: () => onChainPoolData.vault_balance },
-          totalParticipants: { toNumber: () => onChainPoolData.total_participants },
+          vaultBalance: { toNumber: () => onChainPoolData.vaultBalance },
+          totalParticipants: { toNumber: () => onChainPoolData.totalParticipants },
         });
 
         console.log(`[placeBet] Synced pool ${poolId} - Vault Balance: ${onChainPoolData.vaultBalance}, Participants: ${onChainPoolData.totalParticipants}`);

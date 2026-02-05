@@ -4,10 +4,6 @@ import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
 
 export class ProtocolController {
-
-  /**
-   * Initialize protocol (one-time admin setup)
-   */
   static async initializeProtocol(req: Request, res: Response, next: NextFunction) {
     try {
       const { protocolFeeBps, treasuryWallet } = req.body;
@@ -30,9 +26,6 @@ export class ProtocolController {
     }
   }
 
-  /**
-   * Get protocol state from blockchain
-   */
   static async getProtocolState(req: Request, res: Response, next: NextFunction) {
     try {
       const state = await ContractService.getProtocol();
@@ -49,7 +42,7 @@ export class ProtocolController {
         paused: state.paused,
         batchSettleWaitDuration: state.batchSettleWaitDuration,
         protocolFeeBps: state.protocolFeeBps,
-        totalPoolsCreated: state.totalPoolsCreated,
+        totalPoolsCreated: state.totalPools,
         totalUsers: state.totalUsers,
       });
     } catch (error) {
@@ -57,9 +50,6 @@ export class ProtocolController {
     }
   }
 
-  /**
-   * Update protocol fee basis points
-   */
   static async updateProtocolFeeBps(req: Request, res: Response, next: NextFunction) {
     try {
       const { newTreasuryWallet, newProtocolFeeBps } = req.body;

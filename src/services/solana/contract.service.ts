@@ -141,10 +141,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Create a new prediction pool
-   * Contract auto-increments pool_id from protocol.total_pools
-   */
   async createPool(params: {
     name: string;
     tokenMint: PublicKey;
@@ -160,16 +156,13 @@ export class ContractService {
     vaultPubkey: string;
   }> {
     try {
-      // Fetch current protocol to get next pool_id
       const [protocol] = this.getProtocolPDA();
       const protocolData = await this.program.account.protocol.fetch(protocol);
       const poolId = protocolData.totalPools.toNumber();
 
-      // Derive pool PDA using admin and pool_id
       const [pool] = this.getPoolPDA(this.authority.publicKey, poolId);
       const [poolVault] = this.getPoolVaultPDA(pool);
 
-      // Get admin's token account
       const adminAta = await getOrCreateAssociatedTokenAccount(
         this.provider.connection,
         this.authority,
@@ -215,10 +208,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Initialize a bet (L1 step)
-   * User deposits tokens and initializes bet account
-   */
   async initBet(params: {
     poolId: number;
     userKeypair: Keypair;
@@ -231,6 +220,8 @@ export class ContractService {
       const [poolVault] = this.getPoolVaultPDA(pool);
       const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey);
       const [protocol] = this.getProtocolPDA();
+      const poolData = await this.program.account.pool.fetch(pool);
+      console.log("🔍 Current Pool Data:", poolData);
 
       const tx = await this.program.methods
         .initBet(new BN(params.betAmount), params.requestId)

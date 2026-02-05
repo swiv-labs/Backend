@@ -21,6 +21,8 @@ export interface UserBet {
   claimed_at?: string;
   created_at: string;
   last_synced_at: string;
+  pnl?: number;
+  roi?: number;
 }
 
 export interface UserPredictionStats {
@@ -31,9 +33,6 @@ export interface UserPredictionStats {
 }
 
 export class PredictionModel {
-  /**
-   * Create a new user bet
-   */
   static async create(betData: {
     user_wallet: string;
     pool_pubkey: string;
@@ -52,6 +51,8 @@ export class PredictionModel {
         status: 'initialized',
         creation_ts: Math.floor(Date.now() / 1000),
         update_count: 0,
+        pnl: 0,
+        roi: 0,
       }])
       .select()
       .single();
@@ -60,9 +61,6 @@ export class PredictionModel {
     return data;
   }
 
-  /**
-   * Find bet by ID
-   */
   static async findById(id: string): Promise<UserBet | null> {
     const { data, error } = await supabase
       .from('predictions')
@@ -74,9 +72,6 @@ export class PredictionModel {
     return data || null;
   }
 
-  /**
-   * Find bet by on-chain pubkey
-   */
   static async findByPubkey(betPubkey: string): Promise<UserBet | null> {
     const { data, error } = await supabase
       .from('predictions')
@@ -88,9 +83,6 @@ export class PredictionModel {
     return data || null;
   }
 
-  /**
-   * Find all bets for a user
-   */
   static async findByUser(userWallet: string): Promise<UserBet[]> {
     const { data, error } = await supabase
       .from('predictions')
@@ -102,16 +94,10 @@ export class PredictionModel {
     return data || [];
   }
 
-  /**
-   * Find all bets in a pool (alias for findByPool)
-   */
   static async findByPoolId(poolId: number): Promise<UserBet[]> {
     return this.findByPool(poolId);
   }
 
-  /**
-   * Find all bets in a pool
-   */
   static async findByPool(poolId: number): Promise<UserBet[]> {
     const { data, error } = await supabase
       .from('predictions')
@@ -122,9 +108,6 @@ export class PredictionModel {
     return data || [];
   }
 
-  /**
-   * Find active bets for a user
-   */
   static async findActiveByUser(userWallet: string): Promise<UserBet[]> {
     const { data, error } = await supabase
       .from('predictions')
@@ -137,16 +120,10 @@ export class PredictionModel {
     return data || [];
   }
 
-  /**
-   * Update bet status (alias for updateStatus)
-   */
   static async updateBetStatus(id: string, status: BetStatus): Promise<UserBet> {
     return this.updateStatus(id, status);
   }
 
-  /**
-   * Update bet status
-   */
   static async updateStatus(id: string, status: BetStatus): Promise<UserBet> {
     const { data, error } = await supabase
       .from('predictions')
@@ -159,26 +136,32 @@ export class PredictionModel {
     return data;
   }
 
-  /**
-   * Update bet with on-chain calculation
-   */
   static async updateWithCalculation(id: string, {
     calculatedWeight,
     isWeightAdded,
     status,
+    pnl,
+    roi,
   }: {
     calculatedWeight: string;
     isWeightAdded: boolean;
     status: BetStatus;
+    pnl?: number;
+    roi?: number;
   }): Promise<UserBet> {
+    const payload: any = {
+      calculated_weight: calculatedWeight,
+      is_weight_added: isWeightAdded,
+      status,
+      last_synced_at: new Date().toISOString(),
+    };
+
+    if (typeof pnl !== 'undefined') payload.pnl = pnl;
+    if (typeof roi !== 'undefined') payload.roi = roi;
+
     const { data, error } = await supabase
       .from('predictions')
-      .update({
-        calculated_weight: calculatedWeight,
-        is_weight_added: isWeightAdded,
-        status,
-        last_synced_at: new Date().toISOString(),
-      })
+      .update(payload)
       .eq('id', id)
       .select()
       .single();
@@ -187,9 +170,6 @@ export class PredictionModel {
     return data;
   }
 
-  /**
-   * Claim reward
-   */
   static async claimReward(id: string, reward: number, claimTx?: string): Promise<UserBet> {
     const payload: any = {
       status: 'claimed',
@@ -214,20 +194,19 @@ export class PredictionModel {
     return data;
   }
 
-  /**
-   * Sync bet state from on-chain
-   */
   static async syncFromChain(id: string, chainData: any): Promise<UserBet> {
+    const payload: any = {
+      prediction: chainData.prediction?.toNumber ? chainData.prediction.toNumber() : chainData.prediction,
+      calculated_weight: chainData.calculatedWeight?.toString ? chainData.calculatedWeight.toString() : String(chainData.calculatedWeight || '0'),
+      is_weight_added: chainData.isWeightAdded,
+      status: chainData.status,
+      update_count: chainData.updateCount,
+      last_synced_at: new Date().toISOString(),
+    };
+
     const { data, error } = await supabase
       .from('predictions')
-      .update({
-        prediction: chainData.prediction.toNumber(),
-        calculated_weight: chainData.calculatedWeight.toString(),
-        is_weight_added: chainData.isWeightAdded,
-        status: chainData.status,
-        update_count: chainData.updateCount,
-        last_synced_at: new Date().toISOString(),
-      })
+      .update(payload)
       .eq('id', id)
       .select()
       .single();
@@ -236,9 +215,6 @@ export class PredictionModel {
     return data;
   }
 
-  /**
-   * Get user prediction statistics
-   */
   static async getUserStats(userWallet: string): Promise<UserPredictionStats> {
     const bets = await this.findByUser(userWallet);
 
@@ -254,15 +230,12 @@ export class PredictionModel {
     }
 
     bets.forEach((bet) => {
-      // Active bets
       if (bet.status === 'active' || bet.status === 'calculated') {
         stats.activePredictions++;
       }
 
-      // Total staked
       stats.totalStaked += bet.deposit;
 
-      // Total rewards (claimed)
       if (bet.status === 'claimed' && bet.reward) {
         stats.totalRewards += bet.reward;
         stats.totalClaimed++;

@@ -188,8 +188,61 @@ export class PoolsController {
 
         const updatedPool = await PoolModel.updateResolution(id, finalOutcome, "resolved");
 
-        for (const prediction of predictions) {
-          await PredictionModel.updateBetStatus(prediction.id, 'calculated');
+        try {
+          const onChainPool = await contractService.getPool(poolId);
+          if (onChainPool) {
+            console.log('Fetched on-chain pool data after resolution, syncing to DB...', onChainPool);
+            await PoolModel.syncFromChain(id, onChainPool);
+
+            for (const prediction of predictions) {
+              try {
+                if (!prediction.bet_pubkey) continue;
+
+                const betPubkey = new PublicKey(prediction.bet_pubkey);
+                const onChainBet = await contractService.getBet({ poolId, userPubkey: betPubkey });
+                if (!onChainBet) {
+                  await PredictionModel.updateBetStatus(prediction.id, 'calculated');
+                  continue;
+                }
+
+                const depositBig = BigInt(prediction.deposit || 0);
+                const userWeight = BigInt(onChainBet.calculatedWeight || '0');
+                const totalWeight = BigInt(onChainPool.totalWeight || '0');
+                const vaultBalance = BigInt(onChainPool.vaultBalance || 0);
+
+                let payout = BigInt(0);
+                if (userWeight > BigInt(0) && totalWeight > BigInt(0)) {
+                  payout = (userWeight * vaultBalance) / totalWeight;
+                }
+
+                const pnlBig = payout - depositBig;
+                const pnl = Number(pnlBig);
+                const roi = depositBig > BigInt(0) ? Number(pnlBig) / Number(depositBig) : 0;
+
+                await PredictionModel.updateWithCalculation(prediction.id, {
+                  calculatedWeight: onChainBet.calculatedWeight || '0',
+                  isWeightAdded: !!onChainBet.isWeightAdded,
+                  status: onChainBet.status || 'calculated',
+                  pnl,
+                  roi,
+                });
+              } catch (innerErr) {
+                console.error('Failed to sync prediction from chain:', innerErr);
+                try {
+                  await PredictionModel.updateBetStatus(prediction.id, 'calculated');
+                } catch (e) { /* ignore */ }
+              }
+            }
+          } else {
+            for (const prediction of predictions) {
+              await PredictionModel.updateBetStatus(prediction.id, 'calculated');
+            }
+          }
+        } catch (syncErr) {
+          console.error('Error syncing on-chain pool/bets after resolution:', syncErr);
+          for (const prediction of predictions) {
+            await PredictionModel.updateBetStatus(prediction.id, 'calculated');
+          }
         }
 
         return successResponse(res, 'Pool resolved successfully', {
