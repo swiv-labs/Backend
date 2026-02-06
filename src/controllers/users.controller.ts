@@ -4,10 +4,6 @@ import { successResponse, errorResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
 
 export class UsersController {
-  /**
-   * Register a new user with Privy authentication
-   * Supports: email, wallet, Google, Apple, Twitter, Discord, GitHub
-   */
   static async register(req: Request, res: Response, next: NextFunction) {
     try {
       const {
@@ -21,13 +17,11 @@ export class UsersController {
         isEmailVerified,
       } = req.body;
 
-      // Check if user already exists by wallet address
       const existingUser = await UserModel.findByWallet(walletAddress);
       if (existingUser) {
         return errorResponse(res, 'User with this wallet already registered', null, 409);
       }
 
-      // Check if auth identifier is already used (for email/google/external wallet)
       if (authMethod !== 'wallet') {
         const existingByAuth = await UserModel.findByAuthIdentifier(authIdentifier);
         if (existingByAuth) {
@@ -40,7 +34,6 @@ export class UsersController {
         }
       }
 
-      // Check if Privy user ID is already used
       if (privyUserId) {
         const existingByPrivy = await UserModel.findByPrivyId(privyUserId);
         if (existingByPrivy) {
@@ -48,7 +41,6 @@ export class UsersController {
         }
       }
 
-      // Create user
       const userParams: CreateUserParams = {
         walletAddress,
         authMethod,
@@ -82,21 +74,16 @@ export class UsersController {
     }
   }
 
-  /**
-   * Login user - updates last login timestamp
-   */
   static async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { walletAddress, privyUserId } = req.body;
 
       let user = null;
 
-      // Try to find by wallet address first
       if (walletAddress) {
         user = await UserModel.findByWallet(walletAddress);
       }
 
-      // Fallback to Privy ID
       if (!user && privyUserId) {
         user = await UserModel.findByPrivyId(privyUserId);
       }
@@ -105,7 +92,6 @@ export class UsersController {
         throw new AppError('User not found. Please register first.', 404);
       }
 
-      // Update last login
       await UserModel.updateLastLogin(user.wallet_address);
 
       return successResponse(res, 'Login successful', {
@@ -123,9 +109,6 @@ export class UsersController {
     }
   }
 
-  /**
-   * Get user profile by wallet address
-   */
   static async getProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const { walletAddress } = req.params;
@@ -151,9 +134,6 @@ export class UsersController {
     }
   }
 
-  /**
-   * Update user profile
-   */
   static async updateProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const { walletAddress } = req.params;
@@ -182,9 +162,6 @@ export class UsersController {
     }
   }
 
-  /**
-   * Get authentication statistics
-   */
   static async getAuthStats(req: Request, res: Response, next: NextFunction) {
     try {
       const stats = await UserModel.getAuthMethodStats();
