@@ -79,9 +79,6 @@ export class PredictionsController {
     }
   }
 
-  /**
-   * Get bets for a specific pool
-   */
   static async getPoolBets(req: Request, res: Response, next: NextFunction) {
     try {
       const { poolId } = req.params;
@@ -125,7 +122,6 @@ export class PredictionsController {
         throw new AppError('Bet must be calculated before claiming reward', 400);
       }
 
-      // Persist claim in DB with tx signature and reward amount from frontend
       const updatedBet = await PredictionModel.claimReward(
         id,
         rewardAmount || 0,
@@ -138,9 +134,6 @@ export class PredictionsController {
     }
   }
 
-  /**
-   * Update bet prediction (before delegate to TEE)
-   */
   static async updateBetPrediction(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
@@ -159,7 +152,6 @@ export class PredictionsController {
         throw new AppError('Can only update prediction for initialized bets', 400);
       }
 
-      // Update status to active and store prediction
       const updatedBet = await PredictionModel.updateWithCalculation(id, {
         calculatedWeight: "0",
         isWeightAdded: true,
