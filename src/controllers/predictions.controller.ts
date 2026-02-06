@@ -91,11 +91,6 @@ export class PredictionsController {
     }
   }
 
-  /**
-   * Claim reward for a bet
-   * Backend only: Accept confirmed tx signature and reward amount from frontend
-   * Verify user authorization and persist claim record to database
-   */
   static async claimReward(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;

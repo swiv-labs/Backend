@@ -159,12 +159,12 @@ export class PoolModel {
     const { data, error } = await supabase
       .from('pools')
       .update({
-        vault_balance: chainData.vaultBalance.toNumber(),
+        vault_balance: chainData.vaultBalance,
         is_resolved: chainData.isResolved,
-        resolution_ts: chainData.resolutionTs === null ? 0 : chainData.resolutionTs.toNumber(),
+        resolution_ts: chainData.resolutionTs === null ? 0 : chainData.resolutionTs,
         total_weight: chainData.totalWeight,
         weight_finalized: chainData.weightFinalized,
-        total_participants: chainData.totalParticipants.toNumber(),
+        total_participants: chainData.totalParticipants,
         last_synced_at: new Date().toISOString(),
       })
       .eq('id', id)
