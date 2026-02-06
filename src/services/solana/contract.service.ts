@@ -71,12 +71,14 @@ export class ContractService {
   private getBetPDA(
     poolPubkey: PublicKey,
     userPubkey: PublicKey,
+    requestId: string
   ): [PublicKey, number] {
     return PublicKey.findProgramAddressSync(
       [
         SEED_BET,
         poolPubkey.toBuffer(),
         userPubkey.toBuffer(),
+        Buffer.from(requestId),
       ],
       this.program.programId
     );
@@ -218,7 +220,7 @@ export class ContractService {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
       const [poolVault] = this.getPoolVaultPDA(pool);
-      const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey);
+      const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey, params.requestId);
       const [protocol] = this.getProtocolPDA();
       const poolData = await this.program.account.pool.fetch(pool);
       console.log("🔍 Current Pool Data:", poolData);
@@ -247,9 +249,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Delegate bet to TEE for private prediction placement
-   */
   async delegateBet(params: {
     poolId: number;
     userKeypair: Keypair;
@@ -257,7 +256,7 @@ export class ContractService {
   }): Promise<string> {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
-      const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey);
+      const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey, params.requestId);
 
       const tx = await this.program.methods
         .delegateBet(params.requestId)
@@ -277,21 +276,16 @@ export class ContractService {
     }
   }
 
-  /**
-   * Place bet on TEE (private execution)
-   * Sends prediction to TEE for encrypted storage
-   */
   async placeBetOnTEE(params: {
     poolId: number;
     userKeypair: Keypair;
-    prediction: number; // Encrypted prediction value
+    prediction: number;
     requestId: string;
   }): Promise<string> {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
-      const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey);
+      const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey, params.requestId);
 
-      // Get auth token for TEE
       let tokenString = "";
       try {
         const authToken = await getAuthToken(
@@ -306,7 +300,6 @@ export class ContractService {
         console.warn('TEE auth failed, using anonymous mode');
       }
 
-      // Connect to TEE
       const teeConnection = new Connection(
         `${this.teeEndpoint}${tokenString}`,
         {
@@ -322,7 +315,6 @@ export class ContractService {
       );
       const teeProgram = new Program(this.program.idl, teeProvider);
 
-      // Place bet on TEE
       const tx = await teeProgram.methods
         .placeBet(new BN(params.prediction), params.requestId)
         .accountsPartial({
@@ -626,11 +618,12 @@ export class ContractService {
     poolId: number;
     userKeypair: Keypair;
     userTokenAccount: PublicKey;
+    requestId: string;
   }): Promise<string> {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
       const [poolVault] = this.getPoolVaultPDA(pool);
-      const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey);
+      const [bet] = this.getBetPDA(pool, params.userKeypair.publicKey, params.requestId);
 
       const tx = await this.program.methods
         .claimReward()
@@ -713,10 +706,11 @@ export class ContractService {
   async getBet(params: {
     poolId: number;
     userPubkey: PublicKey;
+    requestId: string;
   }): Promise<any> {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, params.poolId);
-      const [bet] = this.getBetPDA(pool, params.userPubkey);
+      const [bet] = this.getBetPDA(pool, params.userPubkey, params.requestId);
 
       const betData = await this.program.account.userBet.fetch(bet);
 
@@ -738,9 +732,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Complete bet flow helper (from init to TEE placement)
-   */
   async completeBetFlow(params: {
     poolId: number;
     userKeypair: Keypair;
