@@ -161,7 +161,7 @@ export class PoolModel {
       .update({
         vault_balance: chainData.vaultBalance.toNumber(),
         is_resolved: chainData.isResolved,
-        resolution_ts: chainData.resolutionTs !== null ? chainData.resolutionTs.toNumber() : null,
+        resolution_ts: chainData.resolutionTs === null ? 0 : chainData.resolutionTs.toNumber(),
         total_weight: chainData.totalWeight,
         weight_finalized: chainData.weightFinalized,
         total_participants: chainData.totalParticipants.toNumber(),

@@ -57,17 +57,12 @@ export class PredictionsController {
     }
   }
 
-  /**
-   * Get user bets/predictions
-   */
   static async getUserBets(req: Request, res: Response, next: NextFunction) {
     try {
       const { userWallet } = req.params;
 
-      // Get bets
       const predictions = await PredictionModel.findByUser(userWallet);
 
-      // Get stats
       const stats = await PredictionModel.getUserStats(userWallet);
 
       return successResponse(res, 'User bets retrieved successfully', {
