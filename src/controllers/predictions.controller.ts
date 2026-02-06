@@ -3,8 +3,9 @@ import { PredictionModel } from '../models/Prediction';
 import { PoolModel } from '../models/Pool';
 import { successResponse } from '../utils/response';
 import { AppError } from '../utils/errorHandler';
-import { PublicKey } from '@solana/web3.js';
 import { ContractService } from '../services/solana/contract.service';
+
+const contractService = new ContractService();
 
 export class PredictionsController {
   static async placeBet(req: Request, res: Response, next: NextFunction) {
@@ -26,14 +27,13 @@ export class PredictionsController {
       }
 
       try {
-        const contractService = new ContractService();
         const onChainPoolData = await contractService.getPool(poolId);
 
         console.log(`[placeBet] On-chain pool data for poolId ${poolId}:`, onChainPoolData);
 
         await PoolModel.syncFromChain(pool.id!, {
-          vaultBalance: { toNumber: () => onChainPoolData.vaultBalance },
-          totalParticipants: { toNumber: () => onChainPoolData.totalParticipants },
+          vaultBalance: onChainPoolData.vaultBalance,
+          totalParticipants: onChainPoolData.totalParticipants,
         });
 
         console.log(`[placeBet] Synced pool ${poolId} - Vault Balance: ${onChainPoolData.vaultBalance}, Participants: ${onChainPoolData.totalParticipants}`);

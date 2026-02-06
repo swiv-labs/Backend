@@ -673,9 +673,6 @@ export class ContractService {
     }
   }
 
-  /**
-   * Fetch pool data
-   */
   async getPool(poolId: number): Promise<any> {
     try {
       const [pool] = this.getPoolPDA(this.authority.publicKey, poolId);
@@ -686,28 +683,33 @@ export class ContractService {
         admin: poolData.admin.toBase58(),
         name: poolData.name,
         tokenMint: poolData.tokenMint.toBase58(),
+
         startTime: poolData.startTime.toNumber(),
         endTime: poolData.endTime.toNumber(),
+
         maxAccuracyBuffer: poolData.maxAccuracyBuffer.toNumber(),
         convictionBonusBps: poolData.convictionBonusBps.toNumber(),
+
         metadata: poolData.metadata,
-        vaultBalance: poolData.vaultBalance.toNumber(),
-        resolutionTarget: poolData.resolutionTarget?.toNumber() || null,
+
+        vaultBalance: poolData.vaultBalance.toString(),
+        resolutionTarget: poolData.resolutionTarget?.toString() ?? null,
+
         isResolved: poolData.isResolved,
-        resolutionTs: poolData.resolutionTs?.toNumber() || null,
-        totalWeight: poolData.totalWeight?.toString() || '0',
+        resolutionTs: poolData.resolutionTs?.toNumber() ?? null,
+
+        totalWeight: poolData.totalWeight?.toString() ?? "0",
+
         weightFinalized: poolData.weightFinalized,
         totalParticipants: poolData.totalParticipants.toNumber(),
       };
+
     } catch (error: any) {
       console.error('Failed to fetch pool:', error);
       return null;
     }
   }
 
-  /**
-   * Fetch bet data
-   */
   async getBet(params: {
     poolId: number;
     userPubkey: PublicKey;
