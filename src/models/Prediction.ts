@@ -6,6 +6,7 @@ export interface UserBet {
   id: string;
   user_wallet: string;
   pool_pubkey: string;
+  request_id: string;
   pool_id: number;
   deposit: number;
   prediction: number;

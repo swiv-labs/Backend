@@ -25,7 +25,7 @@ export class PoolsController {
     try {
       const { id } = req.params;
       const pool = await PoolModel.findById(id);
-      
+
       if (!pool) {
         throw new AppError('Pool not found', 404);
       }
@@ -199,7 +199,9 @@ export class PoolsController {
                 if (!prediction.bet_pubkey) continue;
 
                 const betPubkey = new PublicKey(prediction.bet_pubkey);
-                const onChainBet = await contractService.getBet({ poolId, userPubkey: betPubkey });
+                const onChainBet = await contractService.getBet({
+                  poolId, userPubkey: betPubkey, requestId: prediction.request_id!,
+                });
                 if (!onChainBet) {
                   await PredictionModel.updateBetStatus(prediction.id, 'calculated');
                   continue;
