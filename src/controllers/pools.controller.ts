@@ -173,9 +173,12 @@ export class PoolsController {
       try {
         console.log(`Resolving pool ${poolId} with outcome ${finalOutcome}...`);
         const predictions = await PredictionModel.findByPoolId(poolId);
+        console.log(`Found ${predictions.length} predictions for pool ${poolId} to resolve...`, predictions);
         const betPubkeys = predictions
           .filter((p) => p.bet_pubkey && p.bet_pubkey.length > 0)
           .map((p) => new PublicKey(p.bet_pubkey!));
+
+        console.log('Bet pubkeys to resolve:', betPubkeys);
 
         const resolutionResult = await contractService.completePoolResolution({
           poolId,
