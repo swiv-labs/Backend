@@ -10,7 +10,7 @@ const startServer = () => {
     // Start server
     app.listen(env.PORT, () => {
       console.log('========================================');
-      console.log('CypherCast Backend Server Started');
+      console.log('Swiv Backend Server Started');
       console.log('========================================');
       console.log(`Environment: ${env.NODE_ENV}`);
       console.log(`Port: ${env.PORT}`);
