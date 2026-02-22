@@ -11,6 +11,7 @@ import predictionsRoutes from './routes/predictions.routes';
 import leaderboardRoutes from './routes/leaderboard.routes';
 import statsRoutes from './routes/stats.routes';
 import protocolRoutes from './routes/protocol.routes';
+import waitlistRoutes from './routes/waitlist.routes';
 
 const app: Application = express();
 
@@ -42,6 +43,7 @@ app.use('/api/pools', poolsRoutes);
 app.use('/api/predictions', predictionsRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/waitlist', waitlistRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
